@@ -80,9 +80,9 @@ sub start_recursive_diff
     diff_dirs($dir1, $dir2, $opt_exclude_file_regex);
 
     $start_dir = $dir1;
-    find(\&wanted, $start_dir);
+    find({ wanted => \&wanted, no_chdir => 1 }, $start_dir);
     $start_dir = $dir2;
-    find(\&wanted, $start_dir);
+    find({ wanted => \&wanted, no_chdir => 1 }, $start_dir);
 
     @dirs = uniq(@dirs);
 
