@@ -155,7 +155,7 @@ my $num_lines_found = 0;
 my $sum_size_found = 0;
 my $print_matched_lines = not($opt_matches or $opt_line_count or $opt_datestamp or $opt_size);
 
-find(\&wanted, @dirs);
+find({ wanted => \&wanted, no_chdir => 1 }, @dirs);
 
 if ($opt_count)
 {
