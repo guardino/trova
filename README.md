@@ -49,21 +49,21 @@ Usage:
 ## Examples
 
 - Search for `foo` in all .c files (but not .cpp files):
-`
+```
     trova.pl -n \.c$ foo
-`
+```
 - Search for `foo` in all .dll files, but only show number of matches:
-`
+```
     trova.pl -n \.dll$ foo -m
-`
+```
 - Search for `foo` in all .py files and replace with `bar`:
-`
+```
     trova.pl -n \.py foo -s bar
-`
+```
 - Remove all files ending in `~`:
-`
+```
     trova.pl -c -n "~$" -nox -x "\.svn|\.git" -rm
-`
+```
 
 ## Extras
 
