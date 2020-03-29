@@ -89,4 +89,4 @@ This is a simple Perl replacement for `which` or `where`. For more info run `whi
 
 ## License
 
-Licensed under MIT License (see License.txt).
+Licensed under MIT License (see LICENSE.txt).
