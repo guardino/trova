@@ -48,15 +48,27 @@ Usage:
 
 ## Examples
 
-- Search for `foo` in all .c files (but not .cpp files):
+- List all files in current working directory:
 ```
-    trova.pl -n \.c$ foo
+    trova.pl
 ```
-- Search for `foo` in all .dll files, but only show number of matches:
+- Search for `foo` in all files:
 ```
-    trova.pl -n \.dll$ foo -m
+    trova.pl foo
 ```
-- Search for `foo` in all .py files and replace with `bar`:
+- List all `.java` files:
+```
+    trova.pl -n \.java
+```
+- Search for `foo` in all `.c` files in `src` directory (but not `.cpp` files):
+```
+    trova.pl -n \.c$ -d src foo
+```
+- Search for `foo` in all `.dll` files in `lib` directory, but only show number of matches:
+```
+    trova.pl -n \.dll$ -d lib foo -m
+```
+- Search for `foo` in all `.py` files and replace with `bar`:
 ```
     trova.pl -n \.py foo -s bar
 ```
