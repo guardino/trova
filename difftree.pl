@@ -4,7 +4,7 @@
 # Name:          difftree.pl
 # Description:   Recursively compares two directory trees.
 # Author:        Cesare Guardino
-# Last modified: 16 April 2016
+# Last modified: 29 March 2020
 #################################################################
 
 use strict;

@@ -4,7 +4,7 @@
 # Name:          trova.pl
 # Description:   Recursive directory search and replacement utility
 # Author:        Cesare Guardino
-# Last modified: 25 May 2016
+# Last modified: 29 March 2020
 #######################################################################################
 
 use strict;
