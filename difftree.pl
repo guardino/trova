@@ -192,23 +192,25 @@ sub diff_files
 
     my $default_diff_exe = "diff";
     my $diff_exe = defined $opt_difftool ? $opt_difftool : defined $ENV{'DIFF_EXE'} ? $ENV{'DIFF_EXE'} : $default_diff_exe;
-    my $diff_opts = defined $opt_filter_regex ? "" : "-q";
+    my $diff_opts = defined $opt_filter_regex ? "-C 0" : "-q";
 
     my $cmd = "$diff_exe $diff_opts \"$file1\" \"$file2\"";
     print_result("#(info)", $cmd) if $opt_verbose;
     my $diff_output = `$cmd`;
 
-    my $diff_count = 0;
+    my $filtered_diffs = 0;
     if (defined $opt_filter_regex)
     {
         foreach my $line (split /^/, $diff_output)
         {
-            $diff_count++ if not $line =~ /$opt_filter_regex/;
-            last if $diff_count > 2; 
+            next if not $line =~ /^! /;
+            next if $line =~ /$opt_filter_regex/;
+            $filtered_diffs = 1;
+            last;
         }
     }
 
-    if ((not defined $opt_filter_regex and $diff_output) or (defined $opt_filter_regex and $diff_count > 2))
+    if ((not defined $opt_filter_regex and $diff_output) or (defined $opt_filter_regex and $filtered_diffs))
     {
         print_result("diff", $file1, $file2);
     }
