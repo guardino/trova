@@ -4,7 +4,7 @@
 # Name:          difftree.pl
 # Description:   Recursively compares two directory trees.
 # Author:        Cesare Guardino
-# Last modified: 29 March 2020
+# Last modified: 24 June 2020
 #################################################################
 
 use strict;
@@ -24,6 +24,7 @@ difftree.pl
 
  Options:
    -d,  --difftool                Full path to diff program 
+   -f,  --filter                  Regex filter to ignore diffs
    -h,  --help                    Help usage message
    -s,  --show_same               Show same (identical) files
    -t,  --tree_only               Compare directory structures only (do not diff file contents) 
@@ -41,11 +42,12 @@ B<difftree.pl> Recursively compares two directory trees.
 =cut
 # POD }}}1
 
-my ($opt_difftool, $opt_exclude_dir_pattern, $opt_exclude_file_pattern, $opt_help,
+my ($opt_difftool, $opt_exclude_dir_pattern, $opt_exclude_file_pattern, $opt_filter, $opt_help,
     $opt_show_same, $opt_tree_only, $opt_verbose) = undef;
 
 GetOptions(
     "difftool|d=s"                => \$opt_difftool,
+    "filter|f=s"                  => \$opt_filter,
     "exclude_dir_pattern|xd=s"    => \$opt_exclude_dir_pattern,
     "exclude_file_pattern|xf=s"   => \$opt_exclude_file_pattern,
     'help|?'                      => \$opt_help,
@@ -74,10 +76,11 @@ sub start_recursive_diff
     $dir1 =~ s/\\/\//g;
     $dir2 =~ s/\\/\//g;
 
+    my $opt_filter_regex = compile_regex($opt_filter);
     my $opt_exclude_dir_regex = compile_regex($opt_exclude_dir_pattern);
     my $opt_exclude_file_regex = compile_regex($opt_exclude_file_pattern);
 
-    diff_dirs($dir1, $dir2, $opt_exclude_file_regex);
+    diff_dirs($dir1, $dir2, $opt_exclude_file_regex, $opt_filter_regex);
 
     $start_dir = $dir1;
     find({ wanted => \&wanted, no_chdir => 1 }, $start_dir);
@@ -94,7 +97,7 @@ sub start_recursive_diff
         {
             if (-d "$dir2/$dir")
             {
-                diff_dirs("$dir1/$dir", "$dir2/$dir", $opt_exclude_file_regex);
+                diff_dirs("$dir1/$dir", "$dir2/$dir", $opt_exclude_file_regex, $opt_filter_regex);
             }
             else
             {
@@ -157,7 +160,7 @@ sub compile_regex
 
 sub diff_dirs
 {
-    my ($dir1, $dir2, $opt_exclude_file_regex) = @_;
+    my ($dir1, $dir2, $opt_exclude_file_regex, $opt_filter_regex) = @_;
 
     my @files = uniq(read_dir($dir1), read_dir($dir2));
 
@@ -169,7 +172,7 @@ sub diff_dirs
         {
             if (-e "$dir2/$file" and not -d "$dir2/$file")
             {
-                diff_files("$dir1/$file", "$dir2/$file") if not $opt_tree_only;
+                diff_files("$dir1/$file", "$dir2/$file", $opt_filter_regex) if not $opt_tree_only;
             }
             else
             {
@@ -185,15 +188,28 @@ sub diff_dirs
 
 sub diff_files
 {
-    my ($file1, $file2) = @_;
+    my ($file1, $file2, $opt_filter_regex) = @_;
 
-    my $default_diff_exe = "diff -q";
+    my $default_diff_exe = "diff";
     my $diff_exe = defined $opt_difftool ? $opt_difftool : defined $ENV{'DIFF_EXE'} ? $ENV{'DIFF_EXE'} : $default_diff_exe;
+    my $diff_opts = defined $opt_filter_regex ? "" : "-q";
 
-    my $cmd = "$diff_exe \"$file1\" \"$file2\"";
+    my $cmd = "$diff_exe $diff_opts \"$file1\" \"$file2\"";
     print_result("#(info)", $cmd) if $opt_verbose;
     my $diff_output = `$cmd`;
-    if ($diff_output)
+
+    my $diff_count = 0;
+    if (defined $opt_filter_regex)
+    {
+        my @lines = split("\n", $diff_output);
+        foreach my $line (@lines)
+        {
+            $diff_count++ if not $line =~ /$opt_filter_regex/;
+            last if $diff_count > 2; 
+        }
+    }
+
+    if ((not defined $opt_filter_regex and $diff_output) or (defined $opt_filter_regex and $diff_count > 2))
     {
         print_result("diff", $file1, $file2);
     }
