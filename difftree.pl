@@ -201,8 +201,7 @@ sub diff_files
     my $diff_count = 0;
     if (defined $opt_filter_regex)
     {
-        my @lines = split("\n", $diff_output);
-        foreach my $line (@lines)
+        foreach my $line (split /^/, $diff_output)
         {
             $diff_count++ if not $line =~ /$opt_filter_regex/;
             last if $diff_count > 2; 
