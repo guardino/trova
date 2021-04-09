@@ -4,7 +4,7 @@
 # Name:          difftree.pl
 # Description:   Recursively compares two directory trees.
 # Author:        Cesare Guardino
-# Last modified: 24 June 2020
+# Last modified: 09 April 2021
 #################################################################
 
 use strict;
@@ -241,5 +241,5 @@ sub print_result
 
 sub posix_shell
 {
-    return ($^O ne "MSWin32" or defined $ENV{'TERM'} and $ENV{'TERM'} =~ /cygwin/ or defined $ENV{'MSYSCON'} and $ENV{'MSYSCON'} =~ /sh/) ? 1 : 0;
+    return ($^O ne "MSWin32" or defined $ENV{'TERM'} and $ENV{'TERM'} =~ /cygwin|xterm/ or defined $ENV{'MSYSCON'} and $ENV{'MSYSCON'} =~ /sh/) ? 1 : 0;
 }

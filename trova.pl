@@ -4,7 +4,7 @@
 # Name:          trova.pl
 # Description:   Recursive directory search and replacement utility
 # Author:        Cesare Guardino
-# Last modified: 29 March 2020
+# Last modified: 09 April 2021
 #######################################################################################
 
 use strict;
@@ -384,5 +384,5 @@ sub zero_pad
 
 sub posix_shell
 {
-    return ($^O ne "MSWin32" or defined $ENV{'TERM'} and $ENV{'TERM'} =~ /cygwin/ or defined $ENV{'MSYSCON'} and $ENV{'MSYSCON'} =~ /sh/) ? 1 : 0;
+    return ($^O ne "MSWin32" or defined $ENV{'TERM'} and $ENV{'TERM'} =~ /cygwin|xterm/ or defined $ENV{'MSYSCON'} and $ENV{'MSYSCON'} =~ /sh/) ? 1 : 0;
 }
