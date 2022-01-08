@@ -4,7 +4,7 @@
 # Name:          difftree.pl
 # Description:   Recursively compares two directory trees.
 # Author:        Cesare Guardino
-# Last modified: 09 April 2021
+# Last modified: 08 January 2022
 #################################################################
 
 use strict;
@@ -189,6 +189,8 @@ sub diff_dirs
 sub diff_files
 {
     my ($file1, $file2, $opt_filter_regex) = @_;
+
+    $opt_filter_regex = undef if -B $file1 or -B $file2;
 
     my $default_diff_exe = "diff";
     my $diff_exe = defined $opt_difftool ? $opt_difftool : defined $ENV{'DIFF_EXE'} ? $ENV{'DIFF_EXE'} : $default_diff_exe;
