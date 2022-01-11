@@ -15,6 +15,9 @@ The repo also includes some extra bonus utilities (see below for details)
 
 Requires an up-to-date version of Perl. Tested using Strawberry Perl v5.30.0.
 
+On Microsoft Windows you can use the 64-bit pre-compiled executable versions which
+do not require Perl to be installed. These can be found under [Releases](https://github.com/guardino/trova/releases).
+
 ## Usage
 ```
 Usage:
