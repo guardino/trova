@@ -4,7 +4,7 @@
 # Name:          trova.pl
 # Description:   Recursive directory search and replacement utility
 # Author:        Cesare Guardino
-# Last modified: 09 April 2021
+# Last modified: 07 March 2022
 #######################################################################################
 
 use strict;
@@ -28,13 +28,13 @@ trova.pl
 
  Options:
    -b,    --binary                Specify whether to search inside binary files
-   -c,    --count                 Count and print total number of matches found
+   -c,    --count                 Print number of lines in matched files
    -d,    --dir                   Comma-separated list of directories to search
    -f,    --first                 Exit on first occurrence in each file (runs faster)
    -h,    --help                  Help usage message
    -i,    --ignore                Ignore case
-   -l,    --lines                 Print number of lines in matched files
    -k,    --nuke                  Recursively remove directories and contents if --remove is enabled
+   -l,    --line                  Print line number of all matches found in files
    -m,    --matches               Print number of matches found in files instead of matched lines
    -n,    --name                  Search pattern for file/directory names
    -nox,  --noexclude             Search all files, ignoring any excluded files by default
@@ -43,6 +43,7 @@ trova.pl
    -mv,   --rename                Rename files which match specified pattern
    -s,    --substitute            Substitute any string in files matching specified patterns with substitution text
    -t,    --type                  Type of entities to find (f: files, d: directories, a: all)
+   -u,    --summarize             Summarize total number of matches found
    -v,    --verbose               Print extra information and progress
    -x,    --exclude               Regex to exclude files
    -y,    --datestamp             Print datestamp for matched files and directories
@@ -58,19 +59,19 @@ B<trova.pl> Recursive directory search and replacement utility.
 =cut
 # POD }}}1
 
-my ($opt_binary, $opt_count, $opt_datestamp, $opt_directories, $opt_exclude_pattern, $opt_first, $opt_help, $opt_ignore_case,
-    $opt_line_count, $opt_matches, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
+my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_exclude_pattern, $opt_first, $opt_help, $opt_ignore_case,
+    $opt_line_count, $opt_line_number, $opt_matches, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
     $opt_rename, $opt_size, $opt_substitute, $opt_type, $opt_verbose) = undef;
 
 GetOptions(
     "binary|b!"                   => \$opt_binary,
-    "count|c!"                    => \$opt_count,
+    'count|c'                     => \$opt_line_count,
     "dir|d=s"                     => \$opt_directories,
     "first|f"                     => \$opt_first,
     'help|?'                      => \$opt_help,
-    'nuke|k!'                     => \$opt_nuke,
     'ignore|i'                    => \$opt_ignore_case,
-    'line|l'                      => \$opt_line_count,
+    'nuke|k!'                     => \$opt_nuke,
+    'line|l'                      => \$opt_line_number,
     "matches|m"                   => \$opt_matches,
     "name|n=s"                    => \$opt_name_pattern,
     "noexclude|nox"               => \$opt_noexclude,
@@ -79,6 +80,7 @@ GetOptions(
     "rename|mv=s"                 => \$opt_rename,
     "substitute|s=s"              => \$opt_substitute,
     "type|t=s"                    => \$opt_type,
+    "summarize|u!"                => \$opt_summarize,
     "verbose|v"                   => \$opt_verbose,
     "exclude|x=s"                 => \$opt_exclude_pattern,
     "datestamp|y"                 => \$opt_datestamp,
@@ -89,10 +91,11 @@ pod2usage(1) if $opt_help;
 # Set defaults:
 $opt_noexclude   = 0 if not defined $opt_noexclude;
 $opt_binary      = 0 if not defined $opt_binary;
-$opt_count       = 1 if not defined $opt_count;
+$opt_summarize   = 1 if not defined $opt_summarize;
 $opt_first       = 0 if not defined $opt_first;
 $opt_ignore_case = 0 if not defined $opt_ignore_case;
 $opt_line_count  = 0 if not defined $opt_line_count;
+$opt_line_number = 0 if not defined $opt_line_number;
 $opt_matches     = 0 if not defined $opt_matches;
 $opt_nuke        = 0 if not defined $opt_nuke;
 $opt_print       = 1 if not defined $opt_print;
@@ -106,9 +109,10 @@ $opt_type        = lc($opt_type);
 die("ERROR: No file contents or file name patterns specified. This command will remove all files in directory!\n") if ($opt_remove and not $opt_name_pattern and scalar(@ARGV) == 0);
 die("ERROR: File name pattern '.' is too dangerous. This command will remove all files in directory!\n") if ($opt_remove and defined $opt_name_pattern and $opt_name_pattern eq '.');
 die("ERROR: Cannot specify --remove with --substitute.\n") if ($opt_remove and defined $opt_substitute);
-die("ERROR: Cannot specify --line with --size.\n") if ($opt_line_count and $opt_size);
-die("ERROR: Cannot specify --line with --datestamp.\n") if ($opt_line_count and $opt_datestamp);
+die("ERROR: Cannot specify --count with --size.\n") if ($opt_line_count and $opt_size);
+die("ERROR: Cannot specify --count with --datestamp.\n") if ($opt_line_count and $opt_datestamp);
 die("ERROR: Cannot specify --datestamp with --size.\n") if ($opt_datestamp and $opt_size);
+die("ERROR: Cannot specify --line with --count or --datestamp or --size.\n") if $opt_line_number and ($opt_line_count or $opt_datestamp or $opt_size);
 die("ERROR: --matches option can only be used if a content pattern is specified.\n") if ($opt_matches and scalar(@ARGV) == 0);
 die("ERROR: --first option can only be used if a content pattern is specified.\n") if ($opt_first and scalar(@ARGV) == 0);
 
@@ -157,7 +161,7 @@ my $print_matched_lines = not($opt_matches or $opt_line_count or $opt_datestamp 
 
 find({ wanted => \&wanted, no_chdir => 1 }, @dirs);
 
-if ($opt_count)
+if ($opt_summarize)
 {
     if (scalar(@content_regexes) > 0)
     {
@@ -298,9 +302,11 @@ sub search_file_contents
 
     my @new_lines if $opt_substitute;
     my $contents_match = 0;
+    my $line_number = 0;
     open (FILE, '<', $file) or die ("ERROR: Can't open '$File::Find::name' [$!]");
     while (<FILE>)
     {
+        $line_number++ if $opt_line_number;
         my $new_line = $_ if $opt_substitute;
         foreach my $content_regex (@content_regexes)
         {
@@ -309,7 +315,8 @@ sub search_file_contents
                 $new_line =~ s/$1/$opt_substitute/g if $opt_substitute;
                 my $file_name = $File::Find::name;
                 $file_name =~ s/\//\\/g if not posix_shell();
-                print "$file_name : $_" if $opt_print and $print_matched_lines;
+                my $line_info = ($opt_print and $opt_line_number) ? "[line $line_number]\t" : "";
+                print $line_info . "$file_name : $_" if $opt_print and $print_matched_lines;
                 $contents_match++;
                 $num_content_found += 1;
                 if ($opt_first)
