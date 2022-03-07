@@ -36,11 +36,11 @@ trova.pl
    -k,    --nuke                  Recursively remove directories and contents if --remove is enabled
    -l,    --line                  Print line number of all matches found in files
    -m,    --matches               Print number of matches found in files instead of matched lines
+   -mv,   --rename                Rename files which match specified pattern
    -n,    --name                  Search pattern for file/directory names
    -nox,  --noexclude             Search all files, ignoring any excluded files by default
    -p,    --print                 Print matched file names
    -rm,   --remove                Remove files which match specified pattern
-   -mv,   --rename                Rename files which match specified pattern
    -s,    --substitute            Substitute any string in files matching specified patterns with substitution text
    -t,    --type                  Type of entities to find (f: files, d: directories, a: all)
    -u,    --summarize             Summarize total number of matches found
