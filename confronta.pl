@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 
 #################################################################
-# Name:          difftree.pl
+# Name:          confronta.pl
 # Description:   Recursively compares two directory trees.
 # Author:        Cesare Guardino
-# Last modified: 08 January 2022
+# Last modified: 07 March 2022
 #################################################################
 
 use strict;
@@ -16,11 +16,11 @@ use Pod::Usage;
 # POD {{{1
 =head1 NAME
 
-difftree.pl
+confronta.pl
 
 =head1 SYNOPSIS
 
- difftree.pl [options] <dir1> <dir2>
+ confronta.pl [options] <dir1> <dir2>
 
  Options:
    -d,  --difftool                Full path to diff program 
@@ -37,7 +37,7 @@ difftree.pl
 
 =head1 DESCRIPTION
 
-B<difftree.pl> Recursively compares two directory trees.
+B<confronta.pl> Recursively compares two directory trees.
 
 =cut
 # POD }}}1

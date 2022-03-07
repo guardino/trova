@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 
 #######################################################################################
-# Name:          which.pl
+# Name:          quale.pl
 # Description:   Simple Perl version of standard Linux which utility
 # Author:        Cesare Guardino
-# Last modified: 09 April 2021
+# Last modified: 07 March 2022
 #######################################################################################
 
 use strict;
@@ -17,11 +17,11 @@ use Pod::Usage;
 # POD {{{1
 =head1 NAME
 
-which.pl
+quale.pl
 
 =head1 SYNOPSIS
 
- which.pl [options] <program_name>
+ quale.pl [options] <program_name>
 
  Options:
    -a,    --all                   Prints all occurrences found
@@ -32,7 +32,7 @@ which.pl
 
 =head1 DESCRIPTION
 
-B<which.pl> Simple Perl version of standard Linux which utility.
+B<quale.pl> Simple Perl version of standard Linux which utility.
 
 =cut
 # POD }}}1

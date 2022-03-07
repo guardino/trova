@@ -83,13 +83,13 @@ Usage:
 
 ## Extras
 
-### difftree.pl
+### confronta.pl
 
-This is a simple recursive directory comparison tool. For more info run `difftree.pl --help`.
+This is a simple recursive directory comparison tool. For more info run `confronta.pl --help`.
 
-## which.pl
+## quale.pl
 
-This is a simple Perl replacement for `which` or `where`. For more info run `which.pl --help`.
+This is a simple Perl replacement for `which` or `where`. For more info run `quale.pl --help`.
 
 ## License
 
