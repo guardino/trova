@@ -25,21 +25,22 @@ Usage:
 
      Options:
        -b,    --binary                Specify whether to search inside binary files
-       -c,    --count                 Count and print total number of matches found
+       -c,    --count                 Print number of lines in matched files
        -d,    --dir                   Comma-separated list of directories to search
        -f,    --first                 Exit on first occurrence in each file (runs faster)
        -h,    --help                  Help usage message
        -i,    --ignore                Ignore case
-       -l,    --lines                 Print number of lines in matched files
        -k,    --nuke                  Recursively remove directories and contents if --remove is enabled
+       -l,    --line                  Print line number of all matches found in files
        -m,    --matches               Print number of matches found in files instead of matched lines
+       -mv,   --rename                Rename files which match specified pattern
        -n,    --name                  Search pattern for file/directory names
        -nox,  --noexclude             Search all files, ignoring any excluded files by default
        -p,    --print                 Print matched file names
        -rm,   --remove                Remove files which match specified pattern
-       -mv,   --rename                Rename files which match specified pattern
        -s,    --substitute            Substitute any string in files matching specified patterns with substitution text
        -t,    --type                  Type of entities to find (f: files, d: directories, a: all)
+       -u,    --summarize             Summarize total number of matches found
        -v,    --verbose               Print extra information and progress
        -x,    --exclude               Regex to exclude files
        -y,    --datestamp             Print datestamp for matched files and directories
