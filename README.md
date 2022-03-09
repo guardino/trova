@@ -2,7 +2,7 @@
 
 ## Introduction
 
-`trova` is a simple directory recursive search tool ("trova" means "to find" in
+`trova` is a simple directory recursive search tool ("trova" means "find" in
 Italian). It can be used as an alternative to utilities like "find" or "grep".
 It works on both Windows and Linux operating systems. It even has some limited
 support for doing text replacements or renaming/deleting files. By default,
@@ -17,6 +17,8 @@ Requires an up-to-date version of Perl. Tested using Strawberry Perl v5.30.0.
 
 On Microsoft Windows you can use the 64-bit pre-compiled executable versions which
 do not require Perl to be installed. These can be found under [Releases](https://github.com/guardino/trova/releases).
+In this case you can replace the `.pl` extension in the usage examples below with either `.exe` or nothing at all.
+This means you can simply type `trova`, `confronta` and `quale` to run the pre-compiled versions.
 
 ## Usage
 ```
@@ -60,6 +62,10 @@ Usage:
 ```
     trova.pl foo
 ```
+- Search for `double` in all `.cpp|.h` files and print out line numbers of matches:
+```
+    trova.pl -n ".cpp|.h" double -l
+```
 - List all `.java` files:
 ```
     trova.pl -n \.java
@@ -85,11 +91,39 @@ Usage:
 
 ### confronta.pl
 
-This is a simple recursive directory comparison tool. For more info run `confronta.pl --help`.
+This is a simple recursive directory comparison tool ("confronta" means "compare" in Italian). For more info run `confronta.pl --help`.
+```
+Usage:
+     confronta.pl [options] <dir1> <dir2>
+
+     Options:
+       -d,  --difftool                Full path to diff program 
+       -f,  --filter                  Regex filter to ignore diffs
+       -h,  --help                    Help usage message
+       -s,  --show_same               Show same (identical) files
+       -t,  --tree_only               Compare directory structures only (do not diff file contents) 
+       -v,  --verbose                 Turn on verbosity
+       -xd, --exclude_dir_pattern     Regex to exclude directories
+       -xf, --exclude_file_pattern    Regex to exclude files
+
+     Compulsory arguments:
+       <dir1> <dir2>                  Directories to compare
+```
 
 ## quale.pl
 
-This is a simple Perl replacement for `which` or `where`. For more info run `quale.pl --help`.
+This is a simple Perl replacement for `which` or `where` ("quale" means "which" in Italian). For more info run `quale.pl --help`.
+```
+Usage:
+     quale.pl [options] <program_name>
+
+     Options:
+       -a,    --all                   Prints all occurrences found
+       -h,    --help                  Help usage message
+
+     Optional arguments:
+       <program_name>                 Program name to find
+```
 
 ## License
 
