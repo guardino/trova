@@ -82,9 +82,17 @@ Usage:
 ```
     trova.pl -n \.py foo -s bar
 ```
+- Search for `memcpy` in all `.cpp|.h` files and print number of lines in matching files:
+```
+    trova.pl -n ".cpp|.h"  memcpy -c
+```
+- Search for `memcpy` in all `.cpp|.h` files and print number of matches in each file:
+```
+    trova.pl -n ".cpp|.h"  memcpy -m
+```
 - Remove all files ending in `~`:
 ```
-    trova.pl -c -n "~$" -nox -x "\.svn|\.git" -rm
+    trova.pl -u -n "~$" -nox -x "\.svn|\.git" -rm
 ```
 
 ## Extras
