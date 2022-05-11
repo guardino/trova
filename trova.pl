@@ -4,7 +4,7 @@
 # Name:          trova.pl
 # Description:   Recursive directory search and replacement utility
 # Author:        Cesare Guardino
-# Last modified: 07 March 2022
+# Last modified: 11 May 2022
 #######################################################################################
 
 use strict;
@@ -151,6 +151,8 @@ foreach my $content_pattern (@ARGV)
     push(@content_regexes, compile_regex($content_pattern));
 }
 
+my $search_in_files = scalar(@content_regexes) > 0;
+
 my $name_regex = compile_regex($opt_name_pattern);
 my $exclude_regex = compile_regex($opt_exclude_pattern);
 my $num_files_found = 0;
@@ -163,7 +165,7 @@ find({ wanted => \&wanted, no_chdir => 1 }, @dirs);
 
 if ($opt_summarize)
 {
-    if (scalar(@content_regexes) > 0)
+    if ($search_in_files)
     {
         print "Found $num_content_found occurrences in $num_files_found files.";
         print "\t*** WARNING ***: Only first occurrence in each file is recorded." if $opt_first;
@@ -197,7 +199,7 @@ sub wanted
         $canonical_path =~ s/\//\\/g if not posix_shell();
         print "### Searching in $canonical_path ...\n" if ($opt_verbose and -d $file);
 
-        if (-d $file and defined $name_regex and $opt_type ne "f")
+        if (not $search_in_files and -d $file and defined $name_regex and $opt_type ne "f")
         {
             if ($opt_print and $opt_datestamp)
             {
@@ -220,7 +222,7 @@ sub wanted
         {
             $num_files_found += 1;
 
-            if (scalar(@content_regexes) > 0)
+            if ($search_in_files)
             {
                 return if (-B $file and not $opt_binary);
                 my $contents_match = search_file_contents($file, $path);
