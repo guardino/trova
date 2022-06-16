@@ -4,7 +4,7 @@
 # Name:          confronta.pl
 # Description:   Recursively compares two directory trees.
 # Author:        Cesare Guardino
-# Last modified: 07 March 2022
+# Last modified: 16 June 2022
 #################################################################
 
 use strict;
@@ -31,6 +31,8 @@ confronta.pl
    -v,  --verbose                 Turn on verbosity
    -xd, --exclude_dir_pattern     Regex to exclude directories
    -xf, --exclude_file_pattern    Regex to exclude files
+   -y,  --datestamp               Compare file datestamps only
+   -z,  --size                    Compare file sizes only
 
  Compulsory arguments:
    <dir1> <dir2>                  Directories to compare
@@ -42,8 +44,8 @@ B<confronta.pl> Recursively compares two directory trees.
 =cut
 # POD }}}1
 
-my ($opt_difftool, $opt_exclude_dir_pattern, $opt_exclude_file_pattern, $opt_filter, $opt_help,
-    $opt_show_same, $opt_tree_only, $opt_verbose) = undef;
+my ($opt_datestamp, $opt_difftool, $opt_exclude_dir_pattern, $opt_exclude_file_pattern, $opt_filter, $opt_help,
+    $opt_show_same, $opt_size, $opt_tree_only, $opt_verbose) = undef;
 
 GetOptions(
     "difftool|d=s"                => \$opt_difftool,
@@ -54,8 +56,12 @@ GetOptions(
     "show_same|s"                 => \$opt_show_same,
     "tree_only|t"                 => \$opt_tree_only,
     "verbose|v"                   => \$opt_verbose,
+    "datestamp|y"                 => \$opt_datestamp,
+    "size|z"                      => \$opt_size,
 ) or pod2usage(2);
 pod2usage(1) if $opt_help;
+
+die("ERROR: Cannot specify --datestamp or --size with --tree_only.\n") if (($opt_datestamp or $opt_size) and defined $opt_tree_only);
 
 if (scalar(@ARGV) != 2)
 {
@@ -172,7 +178,17 @@ sub diff_dirs
         {
             if (-e "$dir2/$file" and not -d "$dir2/$file")
             {
-                diff_files("$dir1/$file", "$dir2/$file", $opt_filter_regex) if not $opt_tree_only;
+                if (not $opt_tree_only)
+                {
+                    if ($opt_size or $opt_datestamp)
+                    {
+                        diff_files_by_size_or_datestamp("$dir1/$file", "$dir2/$file");
+                    }
+                    else
+                    {
+                        diff_files("$dir1/$file", "$dir2/$file", $opt_filter_regex);
+                    }
+                }
             }
             else
             {
@@ -213,6 +229,36 @@ sub diff_files
     }
 
     if ((not defined $opt_filter_regex and $diff_output) or (defined $opt_filter_regex and $filtered_diffs))
+    {
+        print_result("diff", $file1, $file2);
+    }
+    elsif ($opt_show_same)
+    {
+        print_result("#same", $file1, $file2);
+    }
+}
+
+sub diff_files_by_size_or_datestamp
+{
+    my ($file1, $file2) = @_;
+
+    my $dates_differ = 0;
+    if ($opt_datestamp)
+    {
+        my $date1 = (stat($file1))[9];
+        my $date2 = (stat($file2))[9];
+        $dates_differ = $date1 != $date2;
+    }
+
+    my $sizes_differ = 0;
+    if ($opt_size)
+    {
+       my $size1 = -s $file1;
+       my $size2 = -s $file2;
+       $sizes_differ = $size1 != $size2
+   }
+
+    if ($dates_differ or $sizes_differ)
     {
         print_result("diff", $file1, $file2);
     }
