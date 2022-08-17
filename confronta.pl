@@ -1,14 +1,18 @@
 #!/usr/bin/perl
 
-#################################################################
+#######################################################################################
 # Name:          confronta.pl
 # Description:   Recursively compares two directory trees.
 # Author:        Cesare Guardino
-# Last modified: 16 June 2022
-#################################################################
+# Last modified: 17 August 2022
+#######################################################################################
 
 use strict;
 use warnings;
+
+use constant NAME    => "confronta";
+use constant VERSION => "0.4.4";
+
 use File::Find;
 use Getopt::Long;
 use Pod::Usage;
@@ -58,8 +62,8 @@ GetOptions(
     "verbose|v"                   => \$opt_verbose,
     "datestamp|y"                 => \$opt_datestamp,
     "size|z"                      => \$opt_size,
-) or pod2usage(2);
-pod2usage(1) if $opt_help;
+) or banner(2);
+banner(1) if $opt_help;
 
 die("ERROR: Cannot specify --datestamp or --size with --tree_only.\n") if (($opt_datestamp or $opt_size) and defined $opt_tree_only);
 
@@ -150,6 +154,15 @@ sub uniq
     }
 
     return @r;
+}
+
+sub banner
+{
+    my ($id) = @_;
+
+    my $message = NAME . " " . VERSION . ", Copyright (c) 2016-2022 Cesare Guardino";
+    print "\n$message\n\n";
+    pod2usage($id);
 }
 
 sub compile_regex

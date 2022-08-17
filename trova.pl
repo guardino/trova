@@ -4,11 +4,14 @@
 # Name:          trova.pl
 # Description:   Recursive directory search and replacement utility
 # Author:        Cesare Guardino
-# Last modified: 11 May 2022
+# Last modified: 17 August 2022
 #######################################################################################
 
 use strict;
 use warnings;
+
+use constant NAME    => "trova";
+use constant VERSION => "0.4.4";
 
 use Cwd;
 use File::Basename;
@@ -85,8 +88,8 @@ GetOptions(
     "exclude|x=s"                 => \$opt_exclude_pattern,
     "datestamp|y"                 => \$opt_datestamp,
     "size|z"                      => \$opt_size,
-) or pod2usage(2);
-pod2usage(1) if $opt_help;
+) or banner(2);
+banner(1) if $opt_help;
 
 # Set defaults:
 $opt_noexclude   = 0 if not defined $opt_noexclude;
@@ -185,6 +188,15 @@ if ($opt_summarize)
     }
 }
 print "\n";
+
+sub banner
+{
+    my ($id) = @_;
+
+    my $message = NAME . " " . VERSION . ", Copyright (c) 2016-2022 Cesare Guardino";
+    print "\n$message\n\n";
+    pod2usage($id);
+}
 
 sub wanted
 {

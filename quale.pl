@@ -4,11 +4,15 @@
 # Name:          quale.pl
 # Description:   Simple Perl version of standard Linux which utility
 # Author:        Cesare Guardino
-# Last modified: 07 March 2022
+# Last modified: 17 August 2022
 #######################################################################################
 
 use strict;
 use warnings;
+
+use constant NAME    => "quale";
+use constant VERSION => "0.4.4";
+
 #use File::Which;                  # exports which()
 use File::Which qw(which where);  # exports which() and where()
 use Getopt::Long;
@@ -42,8 +46,8 @@ my ($opt_all, $opt_help) = undef;
 GetOptions(
     "all|a"                       => \$opt_all,
     'help|?'                      => \$opt_help,
-) or pod2usage(2);
-pod2usage(1) if $opt_help;
+) or banner(2);
+banner(1) if $opt_help;
 
 # Set defaults:
 $opt_all = 0 if not defined $opt_all;
@@ -62,6 +66,15 @@ else
 {
     my $exe_path = which $ARGV[0];
     print_path($exe_path);
+}
+
+sub banner
+{
+    my ($id) = @_;
+
+    my $message = NAME . " " . VERSION . ", Copyright (c) 2016-2022 Cesare Guardino";
+    print "\n$message\n\n";
+    pod2usage($id);
 }
 
 sub print_path
