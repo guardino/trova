@@ -22,6 +22,8 @@ This means you can simply type `trova`, `confronta` and `quale` to run the pre-c
 
 ## Usage
 ```
+trova 0.4.4, Copyright (c) 2016-2022 Cesare Guardino
+
 Usage:
      trova.pl [options] <content_patterns>
 
@@ -101,6 +103,8 @@ Usage:
 
 This is a simple recursive directory comparison tool ("confronta" means "compare" in Italian). For more info run `confronta.pl --help`.
 ```
+confronta 0.4.4, Copyright (c) 2016-2022 Cesare Guardino
+
 Usage:
      confronta.pl [options] <dir1> <dir2>
 
@@ -113,6 +117,8 @@ Usage:
        -v,  --verbose                 Turn on verbosity
        -xd, --exclude_dir_pattern     Regex to exclude directories
        -xf, --exclude_file_pattern    Regex to exclude files
+       -y,  --datestamp               Compare file datestamps only
+       -z,  --size                    Compare file sizes only
 
      Compulsory arguments:
        <dir1> <dir2>                  Directories to compare
@@ -122,6 +128,8 @@ Usage:
 
 This is a simple Perl replacement for `which` or `where` ("quale" means "which" in Italian). For more info run `quale.pl --help`.
 ```
+quale 0.4.4, Copyright (c) 2016-2022 Cesare Guardino
+
 Usage:
      quale.pl [options] <program_name>
 
