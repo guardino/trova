@@ -60,9 +60,9 @@ Usage:
 ```
     trova.pl
 ```
-- Search for `foo` in all files:
+- Search for `foo` and `bar` in all files:
 ```
-    trova.pl foo
+    trova.pl foo bar
 ```
 - Search for `double` in all `.cpp|.h` files and print out line numbers of matches:
 ```
@@ -122,6 +122,25 @@ Usage:
 
      Compulsory arguments:
        <dir1> <dir2>                  Directories to compare
+```
+
+## Examples
+
+- Compare directories `foo` and `bar`
+```
+    trova.pl foo bar
+```
+- Compare directories `foo` and `bar` based on file sizes only (runs faster):
+```
+    trova.pl -z foo bar
+```
+- Compare directories `foo` and `bar`, excluding `.git` folder and any `.log` and `.out` files:
+```
+    trova.pl foo bar -xd \.git$ -xf "\.log|\.out"
+```
+- Compare directories `foo` and `bar`, ignoring differences in lines with date-stamps of the form `17/02/2021 16:10:47`, and listing all identical files:
+```
+    trova.pl -s -f "\d\d\/\d\d\/\d\d\d\d \d\d:\d\d:\d\d" foo bar
 ```
 
 ## quale.pl
