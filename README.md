@@ -92,7 +92,7 @@ Usage:
 ```
     trova.pl -n ".cpp|.h"  memcpy -m
 ```
-- Remove all files ending in `~`:
+- Remove all files in current directory ending in `~`, but do not search in `.git` or `.svn` folders:
 ```
     trova.pl -u -n "~$" -nox -x "\.svn|\.git" -rm
 ```
@@ -136,7 +136,7 @@ Usage:
 ```
 - Compare directories `foo` and `bar`, excluding `.git` folder and any `.log` and `.out` files:
 ```
-    trova.pl foo bar -xd \.git$ -xf "\.log|\.out"
+    trova.pl foo bar -xd \.git -xf "\.log|\.out"
 ```
 - Compare directories `foo` and `bar`, ignoring differences in lines with date-stamps of the form `17/02/2021 16:10:47`, and listing all identical files:
 ```
