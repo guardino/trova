@@ -388,7 +388,7 @@ sub search_file_extra_contents
                     my $index = $line_number + $j - 1;
                     if ($index >= 0 and $index < scalar(@contents))
                     {
-                        $found_extra = 1 if $contents[$index] =~ /($extra_regex)/;
+                        $found_extra = 1 if $contents[$index] =~ /$extra_regex/;
                     }
                 }
             }
