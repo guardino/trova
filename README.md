@@ -22,16 +22,19 @@ This means you can simply type `trova`, `confronta` and `quale` to run the pre-c
 
 ## Usage
 ```
-trova 0.4.4, Copyright (c) 2016-2022 Cesare Guardino
+trova 0.4.5, Copyright (c) 2016-2022 Cesare Guardino
 
 Usage:
      trova.pl [options] <content_patterns>
 
      Options:
+       -1,    --first                 Exit on first occurrence in each file (runs faster)
        -b,    --binary                Specify whether to search inside binary files
        -c,    --count                 Print number of lines in matched files
        -d,    --dir                   Comma-separated list of directories to search
-       -f,    --first                 Exit on first occurrence in each file (runs faster)
+       -e,    --extra                 Regex for extra patterns to search for around main search regex
+       -el,   --extralines            Number of +/- extra lines to search for --extra option (default = 0)
+       -f,    --filter                Regex for fitering out file content matches
        -h,    --help                  Help usage message
        -i,    --ignore                Ignore case
        -k,    --nuke                  Recursively remove directories and contents if --remove is enabled
@@ -46,6 +49,7 @@ Usage:
        -t,    --type                  Type of entities to find (f: files, d: directories, a: all)
        -u,    --summarize             Summarize total number of matches found
        -v,    --verbose               Print extra information and progress
+       -w,    --word                  Add word-boundaries to file content regexes
        -x,    --exclude               Regex to exclude files
        -y,    --datestamp             Print datestamp for matched files and directories
        -z,    --size                  Print file sizes in bytes
@@ -84,13 +88,25 @@ Usage:
 ```
     trova.pl -n \.py foo -s bar
 ```
+- Search for `red` in all `.py` files with word boundaries, equivalent to "\bred\b" (avoids matches like redistribute, credit etc.):
+```
+    trova.pl -n \.py red -w
+```
 - Search for `memcpy` in all `.cpp|.h` files and print number of lines in matching files:
 ```
-    trova.pl -n ".cpp|.h"  memcpy -c
+    trova.pl -n ".cpp|.h" memcpy -c
 ```
 - Search for `memcpy` in all `.cpp|.h` files and print number of matches in each file:
 ```
-    trova.pl -n ".cpp|.h"  memcpy -m
+    trova.pl -n ".cpp|.h" memcpy -m
+```
+- Search for `memcpy` in all `.cpp|.h` files, but filter out lines beginning with "#":
+```
+    trova.pl -n ".cpp|.h" memcpy -m -f "^#"
+```
+- Search for `malloc` in all `.cpp|.h` files which have `free` within +/- 10 lines of it and display line numbers:
+```
+    trova.pl -n ".cpp|.h" malloc -e free -el 10 -l
 ```
 - Remove all files in current directory ending in `~`, but do not search in `.git` or `.svn` folders:
 ```
