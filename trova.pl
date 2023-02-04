@@ -99,7 +99,7 @@ banner(1) if $opt_help;
 $opt_noexclude   = 0 if not defined $opt_noexclude;
 $opt_binary      = 0 if not defined $opt_binary;
 $opt_summarize   = 1 if not defined $opt_summarize;
-$opt_extra_lines = 0 if not defined $opt_extra_lines;
+$opt_extra_lines = 0 if not defined $opt_extra_lines and defined $opt_extra_pattern;
 $opt_first       = 0 if not defined $opt_first;
 $opt_ignore_case = 0 if not defined $opt_ignore_case;
 $opt_line_count  = 0 if not defined $opt_line_count;
@@ -123,6 +123,7 @@ die("ERROR: Cannot specify --datestamp with --size.\n") if ($opt_datestamp and $
 die("ERROR: Cannot specify --line with --count or --datestamp or --size.\n") if $opt_line_number and ($opt_line_count or $opt_datestamp or $opt_size);
 die("ERROR: --matches option can only be used if a content pattern is specified.\n") if ($opt_matches and scalar(@ARGV) == 0);
 die("ERROR: --first option can only be used if a content pattern is specified.\n") if ($opt_first and scalar(@ARGV) == 0);
+die("ERROR: --extralines option can only be used if an extra content pattern is specified with --extra.\n") if ($opt_extra_lines and not defined $opt_extra_pattern);
 
 my @dirs;
 if (defined $opt_directories)
