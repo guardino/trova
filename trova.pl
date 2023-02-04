@@ -4,14 +4,14 @@
 # Name:          trova.pl
 # Description:   Recursive directory search and replacement utility
 # Author:        Cesare Guardino
-# Last modified: 17 August 2022
+# Last modified: 4 February 2023
 #######################################################################################
 
 use strict;
 use warnings;
 
 use constant NAME    => "trova";
-use constant VERSION => "0.4.4";
+use constant VERSION => "0.4.5";
 
 use Cwd;
 use File::Basename;
@@ -33,6 +33,8 @@ trova.pl
    -b,    --binary                Specify whether to search inside binary files
    -c,    --count                 Print number of lines in matched files
    -d,    --dir                   Comma-separated list of directories to search
+   -e,    --extra                 Regex for extra patterns to search for around main search regex
+   -el,   --extralines            Number of +/- extra lines to search for --extra option (default = 0)
    -f,    --first                 Exit on first occurrence in each file (runs faster)
    -h,    --help                  Help usage message
    -i,    --ignore                Ignore case
@@ -62,7 +64,7 @@ B<trova.pl> Recursive directory search and replacement utility.
 =cut
 # POD }}}1
 
-my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_exclude_pattern, $opt_first, $opt_help, $opt_ignore_case,
+my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_extra_pattern, $opt_extra_lines, $opt_exclude_pattern, $opt_first, $opt_help, $opt_ignore_case,
     $opt_line_count, $opt_line_number, $opt_matches, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
     $opt_rename, $opt_size, $opt_substitute, $opt_type, $opt_verbose) = undef;
 
@@ -70,6 +72,8 @@ GetOptions(
     "binary|b!"                   => \$opt_binary,
     'count|c'                     => \$opt_line_count,
     "dir|d=s"                     => \$opt_directories,
+    "extra|e=s"                   => \$opt_extra_pattern,
+    "extralines|el=s"             => \$opt_extra_lines,
     "first|f"                     => \$opt_first,
     'help|?'                      => \$opt_help,
     'ignore|i'                    => \$opt_ignore_case,
@@ -95,6 +99,7 @@ banner(1) if $opt_help;
 $opt_noexclude   = 0 if not defined $opt_noexclude;
 $opt_binary      = 0 if not defined $opt_binary;
 $opt_summarize   = 1 if not defined $opt_summarize;
+$opt_extra_lines = 0 if not defined $opt_extra_lines;
 $opt_first       = 0 if not defined $opt_first;
 $opt_ignore_case = 0 if not defined $opt_ignore_case;
 $opt_line_count  = 0 if not defined $opt_line_count;
@@ -158,6 +163,7 @@ my $search_in_files = scalar(@content_regexes) > 0;
 
 my $name_regex = compile_regex($opt_name_pattern);
 my $exclude_regex = compile_regex($opt_exclude_pattern);
+my $extra_regex = compile_regex($opt_extra_pattern);
 my $num_files_found = 0;
 my $num_content_found = 0;
 my $num_lines_found = 0;
@@ -237,7 +243,7 @@ sub wanted
             if ($search_in_files)
             {
                 return if (-B $file and not $opt_binary);
-                my $contents_match = search_file_contents($file, $path);
+                my $contents_match = $opt_extra_pattern ? search_file_extra_contents($file, $path) : search_file_contents($file, $path);
                 if ($contents_match > 0)
                 {
                     if ($opt_print and $opt_line_count)
@@ -325,6 +331,68 @@ sub search_file_contents
         foreach my $content_regex (@content_regexes)
         {
             if (/($content_regex)/)
+            {
+                $new_line =~ s/$1/$opt_substitute/g if $opt_substitute;
+                my $file_name = $File::Find::name;
+                $file_name =~ s/\//\\/g if not posix_shell();
+                my $line_info = ($opt_print and $opt_line_number) ? "[line $line_number]\t" : "";
+                print $line_info . "$file_name : $_" if $opt_print and $print_matched_lines;
+                $contents_match++;
+                $num_content_found += 1;
+                if ($opt_first)
+                {
+                    close (FILE);
+                    return $contents_match;
+                }
+            }
+        }
+
+        push(@new_lines, $new_line) if $opt_substitute;
+    }
+    close (FILE);
+
+    if ($opt_substitute and $contents_match > 0)
+    {
+        open (FILE, '>', $file) or die ("ERROR: Can't open '$File::Find::name' [$!]");
+        foreach my $new_line (@new_lines)
+        {
+            print FILE $new_line;
+        }
+        close (FILE);
+    }
+
+    return $contents_match;
+}
+
+sub search_file_extra_contents
+{
+    my ($file, $path) = @_;
+
+    my @new_lines if $opt_substitute;
+    my $contents_match = 0;
+    my $line_number = 0;
+    open (FILE, '<', $file) or die ("ERROR: Can't open '$File::Find::name' [$!]");
+    my @contents = <FILE>;
+    foreach (@contents)
+    {
+        $line_number++;
+        my $new_line = $_ if $opt_substitute;
+        foreach my $content_regex (@content_regexes)
+        {
+            my $found_extra = 0;
+            if (/($content_regex)/)
+            {
+                for (my $j = -$opt_extra_lines; $j <= $opt_extra_lines; $j++)
+                {
+                    my $index = $line_number + $j - 1;
+                    if ($index >= 0 and $index < scalar(@contents))
+                    {
+                        $found_extra = 1 if $contents[$index] =~ /($extra_regex)/;
+                    }
+                }
+            }
+
+            if (/($content_regex)/ and $found_extra)
             {
                 $new_line =~ s/$1/$opt_substitute/g if $opt_substitute;
                 my $file_name = $File::Find::name;
