@@ -335,8 +335,8 @@ sub search_file_contents
     open (FILE, '<', $file) or die ("ERROR: Can't open '$File::Find::name' [$!]");
     while (<FILE>)
     {
-        next if defined $opt_filter_pattern and (/$filter_regex/);
         $line_number++ if $opt_line_number;
+        next if defined $opt_filter_pattern and (/$filter_regex/);
         my $new_line = $_ if $opt_substitute;
         foreach my $content_regex (@content_regexes)
         {
@@ -385,8 +385,8 @@ sub search_file_extra_contents
     my @contents = <FILE>;
     foreach (@contents)
     {
-        next if defined $opt_filter_pattern and (/$filter_regex/);
         $line_number++;
+        next if defined $opt_filter_pattern and (/$filter_regex/);
         my $new_line = $_ if $opt_substitute;
         foreach my $content_regex (@content_regexes)
         {
