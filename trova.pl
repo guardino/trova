@@ -51,6 +51,7 @@ trova.pl
    -t,    --type                  Type of entities to find (f: files, d: directories, a: all)
    -u,    --summarize             Summarize total number of matches found
    -v,    --verbose               Print extra information and progress
+   -w,    --word                  Add word-boundaries to file content regexes
    -x,    --exclude               Regex to exclude files
    -y,    --datestamp             Print datestamp for matched files and directories
    -z,    --size                  Print file sizes in bytes
@@ -67,7 +68,7 @@ B<trova.pl> Recursive directory search and replacement utility.
 
 my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_extra_pattern, $opt_extra_lines, $opt_exclude_pattern, $opt_filter_pattern, $opt_first, $opt_help, $opt_ignore_case,
     $opt_line_count, $opt_line_number, $opt_matches, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
-    $opt_rename, $opt_size, $opt_substitute, $opt_type, $opt_verbose) = undef;
+    $opt_rename, $opt_size, $opt_substitute, $opt_type, $opt_verbose, $opt_word) = undef;
 
 GetOptions(
     "binary|b!"                   => \$opt_binary,
@@ -91,6 +92,7 @@ GetOptions(
     "type|t=s"                    => \$opt_type,
     "summarize|u!"                => \$opt_summarize,
     "verbose|v"                   => \$opt_verbose,
+    "word|w"                      => \$opt_word,
     "exclude|x=s"                 => \$opt_exclude_pattern,
     "datestamp|y"                 => \$opt_datestamp,
     "size|z"                      => \$opt_size,
@@ -111,6 +113,7 @@ $opt_nuke        = 0 if not defined $opt_nuke;
 $opt_print       = 1 if not defined $opt_print;
 $opt_remove      = 0 if not defined $opt_remove;
 $opt_verbose     = 0 if not defined $opt_verbose;
+$opt_word        = 0 if not defined $opt_word;
 $opt_datestamp   = 0 if not defined $opt_datestamp;
 $opt_size        = 0 if not defined $opt_size;
 $opt_type        = "a" if not defined $opt_type;
@@ -159,15 +162,15 @@ if (not $opt_noexclude)
 my @content_regexes;
 foreach my $content_pattern (@ARGV)
 {
-    push(@content_regexes, compile_regex($content_pattern));
+    push(@content_regexes, compile_regex($content_pattern, $opt_word));
 }
 
 my $search_in_files = scalar(@content_regexes) > 0;
 
-my $name_regex = compile_regex($opt_name_pattern);
-my $exclude_regex = compile_regex($opt_exclude_pattern);
-my $extra_regex = compile_regex($opt_extra_pattern);
-my $filter_regex = compile_regex($opt_filter_pattern);
+my $name_regex = compile_regex($opt_name_pattern, 0);
+my $exclude_regex = compile_regex($opt_exclude_pattern, 0);
+my $extra_regex = compile_regex($opt_extra_pattern, $opt_word);
+my $filter_regex = compile_regex($opt_filter_pattern, $opt_word);
 my $num_files_found = 0;
 my $num_content_found = 0;
 my $num_lines_found = 0;
@@ -310,9 +313,11 @@ sub wanted
 
 sub compile_regex
 {
-    my ($pattern) = @_;
+    my ($pattern, $word) = @_;
 
     return undef if not defined $pattern;
+
+    $pattern = q(\b) . $pattern . q(\b) if $word;
 
     my $regex = $opt_ignore_case ? eval { qr/$pattern/i } : eval { qr/$pattern/ };
     die("ERROR: Error in pattern '$pattern' [$@]\n") if $@;
