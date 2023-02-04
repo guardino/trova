@@ -30,12 +30,13 @@ trova.pl
  trova.pl [options] <content_patterns>
 
  Options:
+   -1,    --first                 Exit on first occurrence in each file (runs faster)
    -b,    --binary                Specify whether to search inside binary files
    -c,    --count                 Print number of lines in matched files
    -d,    --dir                   Comma-separated list of directories to search
    -e,    --extra                 Regex for extra patterns to search for around main search regex
    -el,   --extralines            Number of +/- extra lines to search for --extra option (default = 0)
-   -f,    --first                 Exit on first occurrence in each file (runs faster)
+   -f,    --filter                Regex for fitering out file content matches
    -h,    --help                  Help usage message
    -i,    --ignore                Ignore case
    -k,    --nuke                  Recursively remove directories and contents if --remove is enabled
@@ -64,7 +65,7 @@ B<trova.pl> Recursive directory search and replacement utility.
 =cut
 # POD }}}1
 
-my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_extra_pattern, $opt_extra_lines, $opt_exclude_pattern, $opt_first, $opt_help, $opt_ignore_case,
+my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_extra_pattern, $opt_extra_lines, $opt_exclude_pattern, $opt_filter_pattern, $opt_first, $opt_help, $opt_ignore_case,
     $opt_line_count, $opt_line_number, $opt_matches, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
     $opt_rename, $opt_size, $opt_substitute, $opt_type, $opt_verbose) = undef;
 
@@ -74,7 +75,8 @@ GetOptions(
     "dir|d=s"                     => \$opt_directories,
     "extra|e=s"                   => \$opt_extra_pattern,
     "extralines|el=s"             => \$opt_extra_lines,
-    "first|f"                     => \$opt_first,
+    "filter|f=s"                  => \$opt_filter_pattern,
+    "first|1"                     => \$opt_first,
     'help|?'                      => \$opt_help,
     'ignore|i'                    => \$opt_ignore_case,
     'nuke|k!'                     => \$opt_nuke,
@@ -165,6 +167,7 @@ my $search_in_files = scalar(@content_regexes) > 0;
 my $name_regex = compile_regex($opt_name_pattern);
 my $exclude_regex = compile_regex($opt_exclude_pattern);
 my $extra_regex = compile_regex($opt_extra_pattern);
+my $filter_regex = compile_regex($opt_filter_pattern);
 my $num_files_found = 0;
 my $num_content_found = 0;
 my $num_lines_found = 0;
@@ -327,6 +330,7 @@ sub search_file_contents
     open (FILE, '<', $file) or die ("ERROR: Can't open '$File::Find::name' [$!]");
     while (<FILE>)
     {
+        next if defined $opt_filter_pattern and (/$filter_regex/);
         $line_number++ if $opt_line_number;
         my $new_line = $_ if $opt_substitute;
         foreach my $content_regex (@content_regexes)
@@ -376,6 +380,7 @@ sub search_file_extra_contents
     my @contents = <FILE>;
     foreach (@contents)
     {
+        next if defined $opt_filter_pattern and (/$filter_regex/);
         $line_number++;
         my $new_line = $_ if $opt_substitute;
         foreach my $content_regex (@content_regexes)
