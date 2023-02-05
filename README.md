@@ -22,7 +22,7 @@ This means you can simply type `trova`, `confronta` and `quale` to run the pre-c
 
 ## Usage
 ```
-trova 0.4.5, Copyright (c) 2016-2022 Cesare Guardino
+trova 0.4.6, Copyright (c) 2016-2023 Cesare Guardino
 
 Usage:
      trova.pl [options] <content_patterns>
@@ -34,6 +34,7 @@ Usage:
        -d,    --dir                   Comma-separated list of directories to search
        -e,    --extra                 Regex for extra patterns to search for around main search regex
        -el,   --extralines            Number of +/- extra lines to search for --extra option (default = 0)
+       -ed,   --extradirection        Direction for --extra pattern search (u: up, d: down, a: all)
        -f,    --filter                Regex for fitering out file content matches
        -h,    --help                  Help usage message
        -i,    --ignore                Ignore case
@@ -104,9 +105,17 @@ Usage:
 ```
     trova.pl -n ".cpp|.h" memcpy -m -f "^#"
 ```
-- Search for `malloc` in all `.cpp|.h` files which have `free` within +/- 10 lines of it and display line numbers:
+- Search for `malloc` in all `.cpp|.h` files which have `free` within +/- 10 lines of it and display number of extra matches:
 ```
-    trova.pl -n ".cpp|.h" malloc -e free -el 10 -l
+    trova.pl -n ".cpp|.h" malloc -e free -el 10
+```
+- Search for `malloc` in all `.cpp|.h` files which have `free` within +5 lines of it (below) and display number of extra matches and line numbers (use `-ed=u` to search upwards for extra matches):
+```
+    trova.pl -n ".cpp|.h" malloc -e free -el 5 -ed=d -l
+```
+- Search for `malloc` in all `.cpp|.h` files which have `free` within the entire file and display number of extra matches and line numbers:
+```
+    trova.pl -n ".cpp|.h" malloc -e free -ed=a -l
 ```
 - Remove all files in current directory ending in `~`, but do not search in `.git` or `.svn` folders:
 ```

@@ -4,20 +4,21 @@
 # Name:          trova.pl
 # Description:   Recursive directory search and replacement utility
 # Author:        Cesare Guardino
-# Last modified: 4 February 2023
+# Last modified: 5 February 2023
 #######################################################################################
 
 use strict;
 use warnings;
 
 use constant NAME    => "trova";
-use constant VERSION => "0.4.5";
+use constant VERSION => "0.4.6";
 
 use Cwd;
 use File::Basename;
 use File::Find;
 use File::Path;
 use Getopt::Long;
+use List::Util qw(min max);
 use Pod::Usage;
 
 # POD {{{1
@@ -36,6 +37,7 @@ trova.pl
    -d,    --dir                   Comma-separated list of directories to search
    -e,    --extra                 Regex for extra patterns to search for around main search regex
    -el,   --extralines            Number of +/- extra lines to search for --extra option (default = 0)
+   -ed,   --extradirection        Direction for --extra pattern search (u: up, d: down, a: all)
    -f,    --filter                Regex for fitering out file content matches
    -h,    --help                  Help usage message
    -i,    --ignore                Ignore case
@@ -66,7 +68,7 @@ B<trova.pl> Recursive directory search and replacement utility.
 =cut
 # POD }}}1
 
-my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_extra_pattern, $opt_extra_lines, $opt_exclude_pattern, $opt_filter_pattern, $opt_first, $opt_help, $opt_ignore_case,
+my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_extra_pattern, $opt_extra_lines, $opt_extra_search_direction, $opt_exclude_pattern, $opt_filter_pattern, $opt_first, $opt_help, $opt_ignore_case,
     $opt_line_count, $opt_line_number, $opt_matches, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
     $opt_rename, $opt_size, $opt_substitute, $opt_type, $opt_verbose, $opt_word) = undef;
 
@@ -76,6 +78,7 @@ GetOptions(
     "dir|d=s"                     => \$opt_directories,
     "extra|e=s"                   => \$opt_extra_pattern,
     "extralines|el=s"             => \$opt_extra_lines,
+    "extradirection|ed=s"         => \$opt_extra_search_direction,
     "filter|f=s"                  => \$opt_filter_pattern,
     "first|1"                     => \$opt_first,
     'help|?'                      => \$opt_help,
@@ -128,7 +131,8 @@ die("ERROR: Cannot specify --datestamp with --size.\n") if ($opt_datestamp and $
 die("ERROR: Cannot specify --line with --count or --datestamp or --size.\n") if $opt_line_number and ($opt_line_count or $opt_datestamp or $opt_size);
 die("ERROR: --matches option can only be used if a content pattern is specified.\n") if ($opt_matches and scalar(@ARGV) == 0);
 die("ERROR: --first option can only be used if a content pattern is specified.\n") if ($opt_first and scalar(@ARGV) == 0);
-die("ERROR: --extralines option can only be used if an extra content pattern is specified with --extra.\n") if ($opt_extra_lines and not defined $opt_extra_pattern);
+die("ERROR: --extralines option can only be used if an extra content pattern is specified with --extra.\n") if (defined $opt_extra_lines and not defined $opt_extra_pattern);
+die("ERROR: --extradirection option can only be used if an extra content pattern is specified with --extra.\n") if (defined $opt_extra_search_direction and not defined $opt_extra_pattern);
 
 my @dirs;
 if (defined $opt_directories)
@@ -206,7 +210,7 @@ sub banner
 {
     my ($id) = @_;
 
-    my $message = NAME . " " . VERSION . ", Copyright (c) 2016-2022 Cesare Guardino";
+    my $message = NAME . " " . VERSION . ", Copyright (c) 2016-2023 Cesare Guardino";
     print "\n$message\n\n";
     pod2usage($id);
 }
@@ -390,25 +394,45 @@ sub search_file_extra_contents
         my $new_line = $_ if $opt_substitute;
         foreach my $content_regex (@content_regexes)
         {
-            my $found_extra = 0;
+            my $num_extra = 0;
             if (/($content_regex)/)
             {
-                for (my $j = -$opt_extra_lines; $j <= $opt_extra_lines; $j++)
+                my ($jmin, $jmax);
+                my $i = $line_number - 1;
+                if (not defined $opt_extra_search_direction)
                 {
-                    my $index = $line_number + $j - 1;
-                    if ($index >= 0 and $index < scalar(@contents))
-                    {
-                        $found_extra = 1 if $contents[$index] =~ /$extra_regex/;
-                    }
+                    $jmin = max($i - $opt_extra_lines, 0);
+                    $jmax = min($i + $opt_extra_lines, scalar(@contents) - 1);
+                }
+                elsif (lc $opt_extra_search_direction eq 'u')
+                {
+                    $jmin = max($i - $opt_extra_lines, 0);
+                    $jmax = $i;
+                }
+                elsif (lc $opt_extra_search_direction eq 'd')
+                {
+                    $jmin = $i;
+                    $jmax = min($i + $opt_extra_lines, scalar(@contents) - 1);
+                }
+                elsif (lc $opt_extra_search_direction eq 'a')
+                {
+                    $jmin = 0;
+                    $jmax = scalar(@contents) - 1;
+                }
+
+                for (my $j = $jmin; $j <= $jmax; $j++)
+                {
+                    $num_extra++ if $contents[$j] =~ /$extra_regex/;
                 }
             }
 
-            if (/($content_regex)/ and $found_extra)
+            if (/($content_regex)/ and $num_extra)
             {
                 $new_line =~ s/$1/$opt_substitute/g if $opt_substitute;
                 my $file_name = $File::Find::name;
                 $file_name =~ s/\//\\/g if not posix_shell();
                 my $line_info = ($opt_print and $opt_line_number) ? "[line $line_number]\t" : "";
+                $line_info .= "[extra $num_extra]\t";
                 print $line_info . "$file_name : $_" if $opt_print and $print_matched_lines;
                 $contents_match++;
                 $num_content_found += 1;
