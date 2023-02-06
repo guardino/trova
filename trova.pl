@@ -4,14 +4,14 @@
 # Name:          trova.pl
 # Description:   Recursive directory search and replacement utility
 # Author:        Cesare Guardino
-# Last modified: 5 February 2023
+# Last modified: 6 February 2023
 #######################################################################################
 
 use strict;
 use warnings;
 
 use constant NAME    => "trova";
-use constant VERSION => "0.4.6";
+use constant VERSION => "0.4.7";
 
 use Cwd;
 use File::Basename;
@@ -422,17 +422,18 @@ sub search_file_extra_contents
 
                 for (my $j = $jmin; $j <= $jmax; $j++)
                 {
+                    next if defined $opt_filter_pattern and ($contents[$j] =~ /$filter_regex/);
                     $num_extra++ if $contents[$j] =~ /$extra_regex/;
                 }
             }
 
-            if (/($content_regex)/ and $num_extra)
+            if (/($content_regex)/ and $num_extra > 0)
             {
                 $new_line =~ s/$1/$opt_substitute/g if $opt_substitute;
                 my $file_name = $File::Find::name;
                 $file_name =~ s/\//\\/g if not posix_shell();
-                my $line_info = ($opt_print and $opt_line_number) ? "[line $line_number]\t" : "";
-                $line_info .= "[extra $num_extra]\t";
+                my $line_info = "[extra $num_extra]\t";
+                $line_info .= ($opt_print and $opt_line_number) ? "[line $line_number]\t" : "";
                 print $line_info . "$file_name : $_" if $opt_print and $print_matched_lines;
                 $contents_match++;
                 $num_content_found += 1;
