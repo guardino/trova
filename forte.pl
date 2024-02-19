@@ -4,7 +4,7 @@
 # Name:          forte.pl
 # Description:   Creates call graphs for Fortran code
 # Author:        Cesare Guardino
-# Last modified: 18 February 2024
+# Last modified: 19 February 2024
 #######################################################################################
 
 use strict;
@@ -170,7 +170,7 @@ sub recurse
         {
             $i++;
             next if is_comment($_, $ext);
-            if (/$call_regex/)
+            if (/$call_regex/ and not /SUBROUTINE|FUNCTION/i)
             {
                 $found = 1;
                 my $basefile = basename($file);
@@ -225,19 +225,19 @@ sub compile_call_regex
 {
     my ($name) = @_;
 
-    my $pattern = "CALL $name\\s|CALL $name\$|CALL $name(\\s*)?\\(|=(\\s*)?$name(\\s*)?\\(";
+    my $pattern = "CALL\\s+$name\\s|CALL\\s+$name\$|CALL\\s+$name(\\s*)?\\(|\\W$name(\\s*)?\\(\.*?\\)";
     return compile_regex($pattern);
 }
 
 sub compile_subroutine_regex
 {
-    my $pattern = "^(\\s*)?SUBROUTINE (.*)";
+    my $pattern = "^(\\s*)?SUBROUTINE\\s+(.*)";
     return compile_regex($pattern);
 }
 
 sub compile_function_regex
 {
-    my $pattern = "^(\\s*)?FUNCTION (.*)\\(";
+    my $pattern = "^(\\s*)?FUNCTION\\s+(.*)\\(";
     return compile_regex($pattern);
 }
 
