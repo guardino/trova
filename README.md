@@ -22,7 +22,7 @@ This means you can simply type `trova`, `confronta` and `quale` to run the pre-c
 
 ## Usage
 ```
-trova 0.4.6, Copyright (c) 2016-2023 Cesare Guardino
+trova 0.4.7, Copyright (c) 2016-2023 Cesare Guardino
 
 Usage:
      trova.pl [options] <content_patterns>
