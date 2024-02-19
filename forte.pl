@@ -25,7 +25,7 @@ forte.pl
 
 =head1 SYNOPSIS
 
- forte.pl [options] name
+ forte.pl [options] <subroutine or function name>
 
  Options:
    -a,    --all                   Show all duplicated calls (takes longer to run)
