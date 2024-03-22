@@ -38,6 +38,7 @@ Usage:
        -f,    --filter                Regex for fitering out file content matches
        -h,    --help                  Help usage message
        -i,    --ignore                Ignore case
+       -j,    --j                     Search only in specified line number
        -k,    --nuke                  Recursively remove directories and contents if --remove is enabled
        -l,    --line                  Print line number of all matches found in files
        -m,    --matches               Print number of matches found in files instead of matched lines

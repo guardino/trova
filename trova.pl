@@ -41,6 +41,7 @@ trova.pl
    -f,    --filter                Regex for fitering out file content matches
    -h,    --help                  Help usage message
    -i,    --ignore                Ignore case
+   -j,    --j                     Search only in specified line number
    -k,    --nuke                  Recursively remove directories and contents if --remove is enabled
    -l,    --line                  Print line number of all matches found in files
    -m,    --matches               Print number of matches found in files instead of matched lines
@@ -70,7 +71,7 @@ B<trova.pl> Recursive directory search and replacement utility.
 # POD }}}1
 
 my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_extra_pattern, $opt_extra_lines, $opt_extra_search_direction, $opt_exclude_pattern, $opt_filter_pattern, $opt_first, $opt_help, $opt_ignore_case,
-    $opt_line_count, $opt_line_number, $opt_matches, $opt_max_depth, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
+    $opt_j, $opt_line_count, $opt_line_number, $opt_matches, $opt_max_depth, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
     $opt_rename, $opt_size, $opt_substitute, $opt_type, $opt_verbose, $opt_word) = undef;
 
 GetOptions(
@@ -84,6 +85,7 @@ GetOptions(
     "first|1"                     => \$opt_first,
     'help|?'                      => \$opt_help,
     'ignore|i'                    => \$opt_ignore_case,
+    'j|j=i'                       => \$opt_j,
     'nuke|k!'                     => \$opt_nuke,
     'line|l'                      => \$opt_line_number,
     "matches|m"                   => \$opt_matches,
@@ -113,6 +115,7 @@ $opt_first       = 0 if not defined $opt_first;
 $opt_ignore_case = 0 if not defined $opt_ignore_case;
 $opt_line_count  = 0 if not defined $opt_line_count;
 $opt_line_number = 0 if not defined $opt_line_number;
+$opt_line_number = 1 if defined $opt_j;
 $opt_matches     = 0 if not defined $opt_matches;
 $opt_max_depth   = 1024 if not defined $opt_max_depth;
 $opt_nuke        = 0 if not defined $opt_nuke;
@@ -352,6 +355,7 @@ sub search_file_contents
     while (<FILE>)
     {
         $line_number++ if $opt_line_number;
+        next if defined $opt_j and $line_number < $opt_j;
         next if defined $opt_filter_pattern and (/$filter_regex/);
         my $new_line = $_ if $opt_substitute;
         foreach my $content_regex (@content_regexes)
@@ -373,6 +377,7 @@ sub search_file_contents
             }
         }
 
+        last if defined $opt_j and $line_number == $opt_j;
         push(@new_lines, $new_line) if $opt_substitute;
     }
     close (FILE);
