@@ -4,14 +4,14 @@
 # Name:          trova.pl
 # Description:   Recursive directory search and replacement utility
 # Author:        Cesare Guardino
-# Last modified: 6 February 2023
+# Last modified: 22 March 2024
 #######################################################################################
 
 use strict;
 use warnings;
 
 use constant NAME    => "trova";
-use constant VERSION => "0.4.7";
+use constant VERSION => "0.5.0";
 
 use Cwd;
 use File::Basename;
@@ -44,6 +44,7 @@ trova.pl
    -k,    --nuke                  Recursively remove directories and contents if --remove is enabled
    -l,    --line                  Print line number of all matches found in files
    -m,    --matches               Print number of matches found in files instead of matched lines
+   -max,  --maxdepth              Set maximum directory depth to search for
    -mv,   --rename                Rename files which match specified pattern
    -n,    --name                  Search pattern for file/directory names
    -nox,  --noexclude             Search all files, ignoring any excluded files by default
@@ -69,7 +70,7 @@ B<trova.pl> Recursive directory search and replacement utility.
 # POD }}}1
 
 my ($opt_binary, $opt_summarize, $opt_datestamp, $opt_directories, $opt_extra_pattern, $opt_extra_lines, $opt_extra_search_direction, $opt_exclude_pattern, $opt_filter_pattern, $opt_first, $opt_help, $opt_ignore_case,
-    $opt_line_count, $opt_line_number, $opt_matches, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
+    $opt_line_count, $opt_line_number, $opt_matches, $opt_max_depth, $opt_name_pattern, $opt_noexclude, $opt_nuke, $opt_print, $opt_remove,
     $opt_rename, $opt_size, $opt_substitute, $opt_type, $opt_verbose, $opt_word) = undef;
 
 GetOptions(
@@ -86,6 +87,7 @@ GetOptions(
     'nuke|k!'                     => \$opt_nuke,
     'line|l'                      => \$opt_line_number,
     "matches|m"                   => \$opt_matches,
+    "maxdepth|max=i"              => \$opt_max_depth,
     "name|n=s"                    => \$opt_name_pattern,
     "noexclude|nox"               => \$opt_noexclude,
     "print|p!"                    => \$opt_print,
@@ -112,6 +114,7 @@ $opt_ignore_case = 0 if not defined $opt_ignore_case;
 $opt_line_count  = 0 if not defined $opt_line_count;
 $opt_line_number = 0 if not defined $opt_line_number;
 $opt_matches     = 0 if not defined $opt_matches;
+$opt_max_depth   = 1024 if not defined $opt_max_depth;
 $opt_nuke        = 0 if not defined $opt_nuke;
 $opt_print       = 1 if not defined $opt_print;
 $opt_remove      = 0 if not defined $opt_remove;
@@ -181,7 +184,7 @@ my $num_lines_found = 0;
 my $sum_size_found = 0;
 my $print_matched_lines = not($opt_matches or $opt_line_count or $opt_datestamp or $opt_size);
 
-find({ wanted => \&wanted, no_chdir => 1 }, @dirs);
+find({ wanted => \&wanted, no_chdir => 1, preprocess => \&preprocess }, @dirs);
 
 if ($opt_summarize)
 {
@@ -210,7 +213,7 @@ sub banner
 {
     my ($id) = @_;
 
-    my $message = NAME . " " . VERSION . ", Copyright (c) 2016-2023 Cesare Guardino";
+    my $message = NAME . " " . VERSION . ", Copyright (c) 2016-2024 Cesare Guardino";
     print "\n$message\n\n";
     pod2usage($id);
 }
@@ -313,6 +316,15 @@ sub wanted
             }
         }
     }
+}
+
+# https://stackoverflow.com/questions/9919909/when-using-perls-filefind-whats-a-quick-easy-way-to-limit-search-depth
+sub preprocess
+{
+    my $depth = $File::Find::dir =~ tr[/][];
+    return @_ if $depth < $opt_max_depth;
+    return grep { not -d } @_ if $depth == $opt_max_depth;
+    return;
 }
 
 sub compile_regex

@@ -22,7 +22,7 @@ This means you can simply type `trova`, `confronta` and `quale` to run the pre-c
 
 ## Usage
 ```
-trova 0.4.7, Copyright (c) 2016-2023 Cesare Guardino
+trova 0.5.0, Copyright (c) 2016-2024 Cesare Guardino
 
 Usage:
      trova.pl [options] <content_patterns>
@@ -41,6 +41,7 @@ Usage:
        -k,    --nuke                  Recursively remove directories and contents if --remove is enabled
        -l,    --line                  Print line number of all matches found in files
        -m,    --matches               Print number of matches found in files instead of matched lines
+       -max,  --maxdepth              Set maximum directory depth to search for
        -mv,   --rename                Rename files which match specified pattern
        -n,    --name                  Search pattern for file/directory names
        -nox,  --noexclude             Search all files, ignoring any excluded files by default
