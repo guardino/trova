@@ -153,19 +153,19 @@ Usage:
 
 - Compare directories `foo` and `bar`
 ```
-    trova.pl foo bar
+    confronta.pl foo bar
 ```
 - Compare directories `foo` and `bar` based on file sizes only (runs faster):
 ```
-    trova.pl -z foo bar
+    confronta.pl -z foo bar
 ```
 - Compare directories `foo` and `bar`, excluding `.git` folder and any `.log` and `.out` files:
 ```
-    trova.pl foo bar -xd \.git -xf "\.log|\.out"
+    confronta.pl foo bar -xd \.git -xf "\.log|\.out"
 ```
 - Compare directories `foo` and `bar`, ignoring differences in lines with date-stamps of the form `17/02/2021 16:10:47`, and listing all identical files:
 ```
-    trova.pl -s -f "\d\d\/\d\d\/\d\d\d\d \d\d:\d\d:\d\d" foo bar
+    confronta.pl -s -f "\d\d\/\d\d\/\d\d\d\d \d\d:\d\d:\d\d" foo bar
 ```
 
 ## quale.pl
