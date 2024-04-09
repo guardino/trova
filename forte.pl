@@ -4,14 +4,14 @@
 # Name:          forte.pl
 # Description:   Creates call graphs for Fortran code
 # Author:        Cesare Guardino
-# Last modified: 19 February 2024
+# Last modified: 9 April 2024
 #######################################################################################
 
 use strict;
 use warnings;
 
 use constant NAME    => "forte";
-use constant VERSION => "0.4.8";
+use constant VERSION => "0.5.1";
 
 use File::Basename;
 use File::Find;
@@ -30,6 +30,7 @@ forte.pl
  Options:
    -a,    --all                   Show all duplicated calls (takes longer to run)
    -b,    --backward              Display backward arrows from specified function to main
+   -c,    --count                 Count specified variable changes
    -d,    --dir                   Comma-separated list of directories to search
    -e,    --ext                   Specify extra file extensions to search 
    -f,    --file                  Single file to search
@@ -44,7 +45,7 @@ B<forte.pl> Creates call graphs for Fortran code
 =cut
 # POD }}}1
 
-my ($opt_all, $opt_backward, $opt_directories, $opt_ext, $opt_file, $opt_help, $opt_ignore_case, $opt_show) = undef;
+my ($opt_all, $opt_backward, $opt_variable, $opt_directories, $opt_ext, $opt_file, $opt_help, $opt_ignore_case, $opt_show) = undef;
 
 my @files;
 my %types;
@@ -56,6 +57,7 @@ sub main
     GetOptions(
         'all|a'                       => \$opt_all,
         'backward|b'                  => \$opt_backward,
+        'count|c=s'                   => \$opt_variable,
         'dir|d=s'                     => \$opt_directories,
         'ext|e=s'                     => \$opt_ext,
         'file|f=s'                    => \$opt_file,
@@ -111,7 +113,7 @@ sub main
 
     my $data = "";
     my $caller_found;
-    ($data, $caller_found) = recurse($data, $name);
+    ($data, $caller_found) = recurse($data, $name, 0, 0);
     die("ERROR: Specified name $name not found.\n") if length($data) == 0;
 
     my $type = $opt_backward ? "digraph" : "graph";
@@ -150,10 +152,12 @@ sub wanted
 
 sub recurse
 {
-    my ($data, $name) = @_;
+    my ($data, $name, $count, $implicit_count) = @_;
 
     my $found = 0;
     my $call_regex = compile_call_regex($name);
+    my $variable_regex = compile_variable_regex($opt_variable) if defined $opt_variable;
+    my $variable_implicit_regex = compile_variable_implicit_regex($opt_variable) if defined $opt_variable;
     my $subroutine_regex = compile_subroutine_regex();
     my $function_regex = compile_function_regex();
     my $symbol = $opt_backward ? "->" : "--";
@@ -175,12 +179,18 @@ sub recurse
                 $found = 1;
                 my $basefile = basename($file);
                 my $lines = read_file($file);
-                $data .= $name; 
+                my $count_str = $implicit_count > 0 ? "$count + $implicit_count?" : $count;
+                $data .= (defined $opt_variable and $count > 0) ? "\"$name [$opt_variable:$count_str]\"" : $name;
                 my $caller;
+                my $variable_count = 0;
+                my $variable_implicit_count = 0;
                 for (my $j = $i; $j >= 1; $j--)
                 {
                     my $line = $lines->[$j-1];
                     next if is_comment($line, $ext);
+
+                    $variable_count++ if (defined $variable_regex and $line =~ /$variable_regex/);
+                    $variable_implicit_count++ if (defined $variable_implicit_regex and $line =~ /$variable_implicit_regex/);
 
                     my $string;
                     if ($line =~ /$subroutine_regex/)
@@ -198,14 +208,14 @@ sub recurse
                         $caller = $string;
                         $caller =~ s/\(.*$//g;
                         $caller =~ s/^\s*(.*?)\s*$/$1/;
-                        if (not $opt_all and $data =~ /$name $symbol $caller/)
+                        if (not $opt_all and $data =~ /$name $symbol $caller|\"$name (\[\w+\])?\" $symbol \"$caller (\[\w+\])?\"/)
                         {
                             $data .= "$caller;\n";
                             last;
                         }
 
                         my $caller_found;
-                        ($data, $caller_found) = recurse($data, $caller);
+                        ($data, $caller_found) = recurse($data, $caller, $variable_count, $variable_implicit_count);
                         $data .= "$caller;\n" if not $caller_found;
                         last;
                     }
@@ -226,6 +236,22 @@ sub compile_call_regex
     my ($name) = @_;
 
     my $pattern = "CALL\\s+$name\\s|CALL\\s+$name\$|CALL\\s+$name(\\s*)?\\(|\\W$name(\\s*)?\\(\.*?\\)";
+    return compile_regex($pattern);
+}
+
+sub compile_variable_regex
+{
+    my ($name) = @_;
+
+    my $pattern = "\\W$name(\\s*)?=|\\W$name\\(\\w+\\)(\\s*)?=";
+    return compile_regex($pattern);
+}
+
+sub compile_variable_implicit_regex
+{
+    my ($name) = @_;
+
+    my $pattern = "\\((.*)?$name";
     return compile_regex($pattern);
 }
 
