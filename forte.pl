@@ -4,7 +4,7 @@
 # Name:          forte.pl
 # Description:   Creates call graphs for Fortran code
 # Author:        Cesare Guardino
-# Last modified: 9 April 2024
+# Last modified: 10 April 2024
 #######################################################################################
 
 use strict;
@@ -145,6 +145,7 @@ sub wanted
     if (-f $_)
     {
         my ($ext) = $_ =~ /\.([^.]+)$/;
+        return if not defined $ext;
         $ext = lc($ext);
         push(@files, $File::Find::name) if exists($types{$ext});
     }
