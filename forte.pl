@@ -106,8 +106,9 @@ sub main
         find({ wanted => \&wanted, no_chdir => 1 }, @dirs);
     }
 
-    my $graph_file = "$name.dot";
-    my $graph_image = "$name.png";
+    my $label = defined $opt_variable ? $name . "-" . $opt_variable : $name;
+    my $graph_file = "$label.dot";
+    my $graph_image = "$label.png";
     remove_file($graph_file);
     remove_file($graph_image);
 
