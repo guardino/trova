@@ -81,6 +81,7 @@ sub main
         'f90' => 0,
         'f95' => 0,
         'f03' => 0,
+        'pl'  => 3,
         'py'  => 3,
     );
     $types{$opt_ext} = 1 if defined $opt_ext;
@@ -273,6 +274,7 @@ sub compile_function_regex
     my $pattern = "^(\\s*)?(FUNCTION)\\s+(.*)\\(";
     $pattern = "\\b(public|protected|private|internal|static)\\b\\s+(.*)?\\s+(.*)\\(" if $types{$ext} == 2;
     $pattern = "\\b(def)\\b(\\s+.*)?\\s+(.*)\\(" if $ext eq 'py';
+    $pattern = "\\b(sub)\\b(.)?\\s+(.*)" if $ext eq 'pl';
     return compile_regex($pattern);
 }
 
@@ -283,6 +285,7 @@ sub compile_caller_regex
     my $pattern = "FUNCTION|SUBROUTINE";
     $pattern = "\\b(public|protected|private|internal|static)\\b" if $types{$ext} == 2;
     $pattern = "\\b(def)\\b" if $ext eq 'py';
+    $pattern = "\\b(sub)\\b" if $ext eq 'pl';
     return compile_regex($pattern);
 }
 
