@@ -2,16 +2,16 @@
 
 #######################################################################################
 # Name:          forte.pl
-# Description:   Creates call graphs for Fortran code
+# Description:   Creates call graphs for Fortran and C# code
 # Author:        Cesare Guardino
-# Last modified: 10 April 2024
+# Last modified: 21 March 2025
 #######################################################################################
 
 use strict;
 use warnings;
 
 use constant NAME    => "forte";
-use constant VERSION => "0.5.1";
+use constant VERSION => "0.6.0";
 
 use File::Basename;
 use File::Find;
@@ -40,7 +40,7 @@ forte.pl
 
 =head1 DESCRIPTION
 
-B<forte.pl> Creates call graphs for Fortran code
+B<forte.pl> Creates call graphs for Fortran and C# code
 
 =cut
 # POD }}}1
@@ -74,6 +74,7 @@ sub main
     $opt_show = 0 if not defined $opt_show;
 
     %types = (
+        'cs'  => 2,
         'f'   => 1,
         'f77' => 1,
         'for' => 1,
@@ -161,7 +162,6 @@ sub recurse
     my $variable_regex = compile_variable_regex($opt_variable) if defined $opt_variable;
     my $variable_implicit_regex = compile_variable_implicit_regex($opt_variable) if defined $opt_variable;
     my $subroutine_regex = compile_subroutine_regex();
-    my $function_regex = compile_function_regex();
     my $symbol = $opt_backward ? "->" : "--";
 
     foreach my $file (@files)
@@ -169,6 +169,8 @@ sub recurse
         my ($ext) = $file =~ /\.([^.]+)$/;
         $ext = 'f' if not defined $ext;
         $ext = lc($ext);
+        my $function_regex = compile_function_regex($ext);
+        my $caller_regex = compile_caller_regex($ext);
         my $i = 0;
         my $fh;
         open ($fh, '<', $file) || die ("Can't open file $file: $!");
@@ -176,7 +178,7 @@ sub recurse
         {
             $i++;
             next if is_comment($_, $ext);
-            if (/$call_regex/ and not /SUBROUTINE|FUNCTION/i)
+            if (/$call_regex/ and not /$caller_regex/i)
             {
                 $found = 1;
                 my $basefile = basename($file);
@@ -201,7 +203,7 @@ sub recurse
                     }
                     elsif ($line =~ /$function_regex/)
                     {
-                        $string = $2;
+                        $string = $3;
                     }
 
                     if (defined $string)
@@ -265,7 +267,19 @@ sub compile_subroutine_regex
 
 sub compile_function_regex
 {
-    my $pattern = "^(\\s*)?FUNCTION\\s+(.*)\\(";
+    my ($ext) = @_;
+
+    my $pattern = "^(\\s*)?(FUNCTION)\\s+(.*)\\(";
+    $pattern = "\\b(public|protected|private|internal|static)\\b\\s+(.*)?\\s+(.*)\\(" if $types{$ext} == 2;
+    return compile_regex($pattern);
+}
+
+sub compile_caller_regex
+{
+    my ($ext) = @_;
+
+    my $pattern = "FUNCTION|SUBROUTINE";
+    $pattern = "\\b(public|protected|private|internal|static)\\b" if $types{$ext} == 2;
     return compile_regex($pattern);
 }
 
@@ -283,8 +297,9 @@ sub is_comment
 {
     my ($line, $ext) = @_;
 
-    return 1 if $line=~/^C/i and $types{$ext};
-    return 1 if $line=~/^(\s*)?!/ and not $types{$ext};
+    return 1 if $line=~/^C/i and $types{$ext} == 1;
+    return 1 if $line=~/^(\s*)?!/ and $types{$ext} == 0;
+    return 1 if $line=~/^(\s*)?\/\// and $types{$ext} == 2;
     return 0;
 }
 
