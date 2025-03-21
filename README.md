@@ -189,7 +189,9 @@ Usage:
 
 ## traversa.pl
 
-This is a Perl script which generates a recursive call graph for Fortran code ("traversa" means "traverse" in Italian).
+This is a Perl script which generates a recursive caller graph for various languages ("traversa" means "traverse" in Italian).
+It was originally written and optimised for Fortran, although it has now been extended to include a few other languages
+(this is work in progress and there maybe some issues).
 Given a function or subroutine name, it will find which functions or subroutines call it, and in turn which call those recursively.
 For more info run `traversa.pl --help`. It requires the `dot` program from Graphviz (see https://graphviz.org/).
 ```
