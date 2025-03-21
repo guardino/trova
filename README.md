@@ -193,7 +193,7 @@ This is a Perl script which generates a recursive call graph for Fortran code ("
 Given a function or subroutine name, it will find which functions or subroutines call it, and in turn which call those recursively.
 For more info run `forte.pl --help`. It requires the `dot` program from Graphviz (see https://graphviz.org/).
 ```
-forte 0.5.1, Copyright (c) 2024 Cesare Guardino
+forte 0.6.0, Copyright (c) 2024-2025 Cesare Guardino
 
 Usage:
      forte.pl [options] <subroutine or function name>

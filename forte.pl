@@ -139,7 +139,7 @@ sub banner
 {
     my ($id) = @_;
 
-    my $message = NAME . " " . VERSION . ", Copyright (c) 2024 Cesare Guardino";
+    my $message = NAME . " " . VERSION . ", Copyright (c) 2024-2025 Cesare Guardino";
     print "\n$message\n\n";
     pod2usage($id);
 }
