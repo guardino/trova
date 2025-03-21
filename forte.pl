@@ -2,7 +2,7 @@
 
 #######################################################################################
 # Name:          forte.pl
-# Description:   Creates call graphs for Fortran and C# code
+# Description:   Creates call graphs for various languages (optimised for Fortran)
 # Author:        Cesare Guardino
 # Last modified: 21 March 2025
 #######################################################################################
@@ -40,7 +40,7 @@ forte.pl
 
 =head1 DESCRIPTION
 
-B<forte.pl> Creates call graphs for Fortran and C# code
+B<forte.pl> Creates call graphs for various languages (optimised for Fortran)
 
 =cut
 # POD }}}1
@@ -81,6 +81,7 @@ sub main
         'f90' => 0,
         'f95' => 0,
         'f03' => 0,
+        'py'  => 3,
     );
     $types{$opt_ext} = 1 if defined $opt_ext;
 
@@ -271,6 +272,7 @@ sub compile_function_regex
 
     my $pattern = "^(\\s*)?(FUNCTION)\\s+(.*)\\(";
     $pattern = "\\b(public|protected|private|internal|static)\\b\\s+(.*)?\\s+(.*)\\(" if $types{$ext} == 2;
+    $pattern = "\\b(def)\\b(\\s+.*)?\\s+(.*)\\(" if $ext eq 'py';
     return compile_regex($pattern);
 }
 
@@ -280,6 +282,7 @@ sub compile_caller_regex
 
     my $pattern = "FUNCTION|SUBROUTINE";
     $pattern = "\\b(public|protected|private|internal|static)\\b" if $types{$ext} == 2;
+    $pattern = "\\b(def)\\b" if $ext eq 'py';
     return compile_regex($pattern);
 }
 
@@ -300,6 +303,7 @@ sub is_comment
     return 1 if $line=~/^C/i and $types{$ext} == 1;
     return 1 if $line=~/^(\s*)?!/ and $types{$ext} == 0;
     return 1 if $line=~/^(\s*)?\/\// and $types{$ext} == 2;
+    return 1 if $line=~/^(\s*)?#/ and $types{$ext} == 3;
     return 0;
 }
 
