@@ -187,16 +187,16 @@ Usage:
        <program_name>                 Program name to find
 ```
 
-## forte.pl
+## traversa.pl
 
-This is a Perl script which generates a recursive call graph for Fortran code ("forte" means "strong" in Italian).
+This is a Perl script which generates a recursive call graph for Fortran code ("traversa" means "traverse" in Italian).
 Given a function or subroutine name, it will find which functions or subroutines call it, and in turn which call those recursively.
-For more info run `forte.pl --help`. It requires the `dot` program from Graphviz (see https://graphviz.org/).
+For more info run `traversa.pl --help`. It requires the `dot` program from Graphviz (see https://graphviz.org/).
 ```
-forte 0.6.0, Copyright (c) 2024-2025 Cesare Guardino
+traversa 0.6.0, Copyright (c) 2024-2025 Cesare Guardino
 
 Usage:
-     forte.pl [options] <subroutine or function name>
+     traversa.pl [options] <subroutine or function name>
 
      Options:
        -a,    --all                   Show all duplicated calls (takes longer to run)

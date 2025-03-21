@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 #######################################################################################
-# Name:          forte.pl
+# Name:          traversa.pl
 # Description:   Creates call graphs for various languages (optimised for Fortran)
 # Author:        Cesare Guardino
 # Last modified: 21 March 2025
@@ -10,7 +10,7 @@
 use strict;
 use warnings;
 
-use constant NAME    => "forte";
+use constant NAME    => "traversa";
 use constant VERSION => "0.6.0";
 
 use File::Basename;
@@ -21,11 +21,11 @@ use Pod::Usage;
 # POD {{{1
 =head1 NAME
 
-forte.pl
+traversa.pl
 
 =head1 SYNOPSIS
 
- forte.pl [options] <subroutine or function name>
+ traversa.pl [options] <subroutine or function name>
 
  Options:
    -a,    --all                   Show all duplicated calls (takes longer to run)
@@ -40,7 +40,7 @@ forte.pl
 
 =head1 DESCRIPTION
 
-B<forte.pl> Creates call graphs for various languages (optimised for Fortran)
+B<traversa.pl> Creates call graphs for various languages (optimised for Fortran)
 
 =cut
 # POD }}}1
