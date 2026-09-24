@@ -4,7 +4,7 @@
 # Name:          forte.pl
 # Description:   Creates call graphs for various languages (optimised for Fortran)
 # Author:        Cesare Guardino
-# Last modified: 21 March 2025
+# Last modified: 24 September 2026
 #######################################################################################
 
 use strict;
@@ -48,7 +48,9 @@ B<forte.pl> Creates call graphs for various languages (optimised for Fortran)
 my ($opt_all, $opt_backward, $opt_variable, $opt_directories, $opt_ext, $opt_file, $opt_help, $opt_ignore_case, $opt_show) = undef;
 
 my @files;
+my $symbol;
 my %types;
+my $vars = {};
 
 main();
 
@@ -72,6 +74,7 @@ sub main
     $opt_backward = 0 if not defined $opt_backward;
     $opt_ignore_case = 0 if not defined $opt_ignore_case;
     $opt_show = 0 if not defined $opt_show;
+    $symbol = $opt_backward ? "->" : "--";
 
     %types = (
         'cs'  => 2,
@@ -118,6 +121,14 @@ sub main
     my $data = "";
     my $caller_found;
     ($data, $caller_found) = recurse($data, $name, 0, 0);
+    foreach my $key (keys %$vars)
+    {
+        my $value = $vars->{$key};
+        print "$key = $value\n";   # TODO: Remove debug print statement
+        $data =~ s/$key $symbol/\"$key [$opt_variable:$value]\" $symbol/g; 
+        $data =~ s/$key;/\"$key [$opt_variable:$value]\";/g; 
+    }
+
     die("ERROR: Specified name $name not found.\n") if length($data) == 0;
 
     my $type = $opt_backward ? "digraph" : "graph";
@@ -164,7 +175,6 @@ sub recurse
     my $variable_regex = compile_variable_regex($opt_variable) if defined $opt_variable;
     my $variable_implicit_regex = compile_variable_implicit_regex($opt_variable) if defined $opt_variable;
     my $subroutine_regex = compile_subroutine_regex();
-    my $symbol = $opt_backward ? "->" : "--";
 
     foreach my $file (@files)
     {
@@ -185,6 +195,19 @@ sub recurse
                 $found = 1;
                 my $basefile = basename($file);
                 my $lines = read_file($file);
+                $data .= $name;
+                if (defined $opt_variable and ($count > 0 or $implicit_count > 0))
+                {
+                    # TODO: if statement appears redundant
+                    if ((exists $vars->{$name}) and $vars->{$name} < $count + $implicit_count)
+                    {
+                        $vars->{$name} = $count + $implicit_count;
+                    }
+                    else
+                    {
+                        $vars->{$name} = $count + $implicit_count;
+                    }
+                }
                 my $count_str = $implicit_count > 0 ? "$count + $implicit_count?" : $count;
                 $data .= (defined $opt_variable and $count > 0) ? "\"$name [$opt_variable:$count_str]\"" : $name;
                 my $caller;
@@ -214,7 +237,7 @@ sub recurse
                         $caller = $string;
                         $caller =~ s/\(.*$//g;
                         $caller =~ s/^\s*(.*?)\s*$/$1/;
-                        if (not $opt_all and $data =~ /$name $symbol $caller|\"$name (\[\w+\])?\" $symbol \"$caller (\[\w+\])?\"/)
+                        if (not $opt_all and $data =~ /$name $symbol $caller|(\")?$name(\s)?(\[\w+\])?(\")? $symbol (\")?$caller(\s)?(\[\w+\])?(\")?/)
                         {
                             $data .= "$caller;\n";
                             last;
@@ -241,7 +264,7 @@ sub compile_call_regex
 {
     my ($name) = @_;
 
-    my $pattern = "CALL\\s+$name\\s|CALL\\s+$name\$|CALL\\s+$name(\\s*)?\\(|\\W$name(\\s*)?\\(\.*?\\)";
+    my $pattern = "CALL\\s+$name\\s|CALL\\s+$name\$|CALL\\s+$name(\\s*)?\\(|\\W$name(\\s*)?\\(\.*?(\\))?";
     return compile_regex($pattern);
 }
 
@@ -271,7 +294,7 @@ sub compile_function_regex
 {
     my ($ext) = @_;
 
-    my $pattern = "^(\\s*)?(FUNCTION)\\s+(.*)\\(";
+    my $pattern = "^(\\w*\\s*)?(FUNCTION)\\s+(.*)\\(";
     $pattern = "\\b(public|protected|private|internal|static)\\b\\s+(.*)?\\s+(.*)\\(" if $types{$ext} == 2;
     $pattern = "\\b(def)\\b(\\s+.*)?\\s+(.*)\\(" if $ext eq 'py';
     $pattern = "\\b(sub)\\b(.)?\\s+(.*)" if $ext eq 'pl';
