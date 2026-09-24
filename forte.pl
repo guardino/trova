@@ -125,8 +125,8 @@ sub main
     {
         my $value = $vars->{$key};
         print "$key = $value\n";   # TODO: Remove debug print statement
-        $data =~ s/$key $symbol/\"$key [$opt_variable:$value]\" $symbol/g; 
-        $data =~ s/$key;/\"$key [$opt_variable:$value]\";/g; 
+        $data =~ s/$key $symbol/\"$key [$opt_variable:$value]\" $symbol/g;
+        $data =~ s/$key;/\"$key [$opt_variable:$value]\";/g;
     }
 
     die("ERROR: Specified name $name not found.\n") if length($data) == 0;
@@ -294,7 +294,7 @@ sub compile_function_regex
 {
     my ($ext) = @_;
 
-    my $pattern = "^(\\w*\\s*)?(FUNCTION)\\s+(.*)\\(";
+    my $pattern = "(\\w*\\s*)?(FUNCTION)\\s+(.*)\\(";
     $pattern = "\\b(public|protected|private|internal|static)\\b\\s+(.*)?\\s+(.*)\\(" if $types{$ext} == 2;
     $pattern = "\\b(def)\\b(\\s+.*)?\\s+(.*)\\(" if $ext eq 'py';
     $pattern = "\\b(sub)\\b(.)?\\s+(.*)" if $ext eq 'pl';
