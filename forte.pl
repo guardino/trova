@@ -208,8 +208,7 @@ sub recurse
                         $vars->{$name} = $count + $implicit_count;
                     }
                 }
-                my $count_str = $implicit_count > 0 ? "$count + $implicit_count?" : $count;
-                $data .= (defined $opt_variable and $count > 0) ? "\"$name [$opt_variable:$count_str]\"" : $name;
+
                 my $caller;
                 my $variable_count = 0;
                 my $variable_implicit_count = 0;
