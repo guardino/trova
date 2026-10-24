@@ -4,7 +4,7 @@
 # Name:          forte.pl
 # Description:   Creates call graphs for various languages (optimised for Fortran)
 # Author:        Cesare Guardino
-# Last modified: 24 September 2026
+# Last modified: 24 October 2026
 #######################################################################################
 
 use strict;
@@ -124,7 +124,6 @@ sub main
     foreach my $key (keys %$vars)
     {
         my $value = $vars->{$key};
-        print "$key = $value\n";   # TODO: Remove debug print statement
         $data =~ s/$key $symbol/\"$key [$opt_variable:$value]\" $symbol/g;
         $data =~ s/$key;/\"$key [$opt_variable:$value]\";/g;
     }
@@ -198,15 +197,7 @@ sub recurse
                 $data .= $name;
                 if (defined $opt_variable and ($count > 0 or $implicit_count > 0))
                 {
-                    # TODO: if statement appears redundant
-                    if ((exists $vars->{$name}) and $vars->{$name} < $count + $implicit_count)
-                    {
-                        $vars->{$name} = $count + $implicit_count;
-                    }
-                    else
-                    {
-                        $vars->{$name} = $count + $implicit_count;
-                    }
+                    $vars->{$name} = $count + $implicit_count;
                 }
 
                 my $caller;
